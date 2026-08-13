@@ -19,7 +19,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         geode::Button* m_prevArrow;
         geode::Button* m_nextArrow;
     };
-    $override bool init();
+    bool init();
 
     void switchPage(CCObject*);
 	void setupArrows();
