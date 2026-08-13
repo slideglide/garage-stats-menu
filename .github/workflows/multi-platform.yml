@@ -41,7 +41,6 @@ jobs:
         with:
           bindings: geode-sdk/bindings
           bindings-ref: main
-          sdk: 'nightly'
           combine: true
           target: ${{ matrix.config.target }}
           export-symbols: true
