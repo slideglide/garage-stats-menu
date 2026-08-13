@@ -184,9 +184,6 @@ void StatsGarageLayer::pageChildren(float) {
                 allSame = false;
             ++actualIndex;
         }
-
-        if (allSame)
-            return;
     }
 
     fields->m_previousActualChildren.clear();
