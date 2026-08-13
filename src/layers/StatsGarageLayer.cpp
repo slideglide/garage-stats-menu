@@ -164,9 +164,11 @@ void StatsGarageLayer::pageChildren(float) {
     if (fields->m_currentPage > maxPage)
         fields->m_currentPage = maxPage;
 
-    auto winSize = CCDirector::get()->getWinSize();
-    float xPos = winSize.width - RIGHT_MARGIN;
-    float startY = hasMultiplePages ? (winSize.height - 30.f) : (winSize.height - TOP_MARGIN);
+    auto safeArea = geode::utils::getSafeAreaRect();
+    float xPos = safeArea.getMaxX() - RIGHT_MARGIN;
+    float safeTop = safeArea.getMaxY();
+
+    float startY = hasMultiplePages ? (safeTop - 34.f) : (safeTop - TOP_MARGIN);
 
     int actualIndex = 0;
     int visibleIndex = 0;
@@ -191,7 +193,7 @@ void StatsGarageLayer::pageChildren(float) {
     if (hasMultiplePages && visibleIndex > 0) {
         float lastItemY = startY - ((visibleIndex - 1) * ITEM_STEP_Y);
 
-        fields->m_prevArrow->setPosition({xPos, winSize.height - 10.f});
-        fields->m_nextArrow->setPosition({xPos, lastItemY - 17.f});
+        fields->m_prevArrow->setPosition({xPos, safeTop - 15.f});
+        fields->m_nextArrow->setPosition({xPos, lastItemY - 16.f});
     }
 }
