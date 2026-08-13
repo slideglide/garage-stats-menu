@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/Geode.hpp>
+#include <Geode/ui/Label.hpp>
 
 namespace StatsDisplayAPI {
 	inline cocos2d::CCNode* getNewItem(std::string ID, cocos2d::CCNode* displayNode, int displayedNum, float nodeScale = 0.5f) {
@@ -12,7 +13,7 @@ namespace StatsDisplayAPI {
 		displayNode->setPosition({ 0, 0 });
 		ret->addChild(displayNode);
 
-		auto label = cocos2d::CCLabelBMFont::create(std::to_string(displayedNum).c_str(), "bigFont.fnt");
+		auto label = geode::Label::create(fmt::to_string(displayedNum), "bigFont.fnt");
 		label->setID(ID + "-label");
 		label->setScale(0.34f);
 		label->setAnchorPoint({ 1, 0.5 });

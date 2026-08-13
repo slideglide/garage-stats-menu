@@ -1,5 +1,5 @@
 {
-	"geode": "5.2.0",
+	"geode": "5.9.0",
 	"gd": {
 		"win": "2.2081",
 		"android": "2.2081",
@@ -9,7 +9,7 @@
 	"id": "capeling.garage-stats-menu",
 	"name": "Stats Display API",
 	"version": "v1.3.1",
-	"developers": ["Capeling", "OmgRod"],
+	"developers": ["Capeling", "OmgRod", "slideglide"],
 	"description": "Allows mods to easily add custom stats into the icon kit",
 	"api": {
 		"include": [
@@ -24,7 +24,7 @@
 	},
 	"issues": {
 		"info": "If you find any issues create an issue here!",
-		"url": "https://github.com/OmgRod/garage-stats-menu/issues/new"
+		"url": "https://github.com/slideglide/garage-stats-menu/issues/new"
 	},
 	"tags": [
 		"utility",

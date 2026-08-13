@@ -8,7 +8,6 @@
 #include "../Macros.h"
 
 class $modify(StatsGarageLayer, GJGarageLayer) {
-public:
 	struct Fields {
 		cocos2d::CCMenu* m_statsMenu = nullptr;
 		int m_prevActualChildren = 0;
