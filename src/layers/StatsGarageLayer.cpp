@@ -3,10 +3,11 @@
 
 using namespace geode::prelude;
 
-constexpr int ELEMENTS_PER_PAGE = 10;
-constexpr float TOP_MARGIN = 6.f;
+constexpr int ELEMENTS_PER_PAGE = 6; 
+constexpr float TOP_MARGIN = 12.f;
 constexpr float RIGHT_MARGIN = 18.f;
-constexpr float ARROW_SCALE = 0.6f;
+constexpr float ITEM_STEP_Y = 15.f;
+constexpr float ARROW_SCALE = 0.5f;
 
 static void addDefaultItem(CCNode* statsMenu,
                            std::string setting,
@@ -68,19 +69,12 @@ bool StatsGarageLayer::init() {
     if (!GJGarageLayer::init())
         return false;
 
-    auto winSize = CCDirector::get()->getWinSize();
-    auto mod = Mod::get();
     auto fields = m_fields.self();
 
     fields->m_statsMenu = CCMenu::create();
-
     fields->m_statsMenu->setID("stats-menu"_spr);
     fields->m_statsMenu->setZOrder(2);
-    fields->m_statsMenu->setLayout(ColumnLayout::create()
-                                       ->setAxisReverse(true)
-                                       ->setCrossAxisAlignment(AxisAlignment::End)
-                                       ->setAxisAlignment(AxisAlignment::End)
-                                       ->setGap(15));
+    fields->m_statsMenu->setPosition({0.f, 0.f});
 
     this->addChild(fields->m_statsMenu);
 
@@ -107,18 +101,7 @@ bool StatsGarageLayer::init() {
                        item.statNum, item.scale);
     }
 
-    float bottomMargin =
-        CCSprite::createWithSpriteFrameName("GJ_sideArt_001.png")->getContentHeight();
-    float arrowSize =
-        ARROW_SCALE * CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png")->getContentWidth();
-
-    float maxHeight = winSize.height - TOP_MARGIN - bottomMargin;
-    fields->m_statsMenu->setContentSize({0, maxHeight});
-    fields->m_statsMenu->setAnchorPoint({0.5f, 1.f});
-    fields->m_statsMenu->setPosition({winSize.width - RIGHT_MARGIN, winSize.height - TOP_MARGIN});
-
     setupArrows();
-
     schedule(schedule_selector(StatsGarageLayer::pageChildren));
 
     return true;
@@ -131,8 +114,8 @@ void StatsGarageLayer::setupArrows() {
         Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [fields](auto) {
             requestPage(fields, -1);
         });
-	auto prevSprite = static_cast<CCSprite*>(fields->m_prevArrow->getDisplayNode());
-	prevSprite->setRotation(90);
+    auto prevSprite = static_cast<CCSprite*>(fields->m_prevArrow->getDisplayNode());
+    prevSprite->setRotation(90);
     prevSprite->setScale(ARROW_SCALE);
     fields->m_prevArrow->setID("prev-arrow"_spr);
 
@@ -142,8 +125,8 @@ void StatsGarageLayer::setupArrows() {
         Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [fields](auto) {
             requestPage(fields, 1);
         });
-	auto nextSprite = static_cast<CCSprite*>(fields->m_nextArrow->getDisplayNode());
-	nextSprite->setFlipX(true);
+    auto nextSprite = static_cast<CCSprite*>(fields->m_nextArrow->getDisplayNode());
+    nextSprite->setFlipX(true);
     nextSprite->setRotation(90);
     nextSprite->setScale(ARROW_SCALE);
     fields->m_nextArrow->setID("next-arrow"_spr);
@@ -165,29 +148,10 @@ void StatsGarageLayer::pageChildren(float) {
         return;
 
     auto children = statsMenu->getChildrenExt();
-    size_t childCount = children.size();
-
-    if (childCount < 2)
+    if (children.size() < 2)
         return;
 
     int actualChildren = getActualChildrenCount(fields, statsMenu);
-
-    if (fields->m_requestedPage == fields->m_currentPage &&
-        actualChildren == static_cast<int>(fields->m_previousActualChildren.size())) {
-        bool allSame = true;
-        int actualIndex = 0;
-
-        for (CCNode* child : children) {
-            if (isArrowNode(fields, child))
-                continue;
-            if (child != fields->m_previousActualChildren[actualIndex])
-                allSame = false;
-            ++actualIndex;
-        }
-
-        if (allSame)
-            return;
-    }
 
     fields->m_previousActualChildren.clear();
     fields->m_currentPage = fields->m_requestedPage;
@@ -197,44 +161,39 @@ void StatsGarageLayer::pageChildren(float) {
     fields->m_nextArrow->setVisible(hasMultiplePages);
 
     int maxPage = getMaxPage(actualChildren);
-
     if (fields->m_currentPage > maxPage)
         fields->m_currentPage = maxPage;
 
+    auto safeArea = geode::utils::getSafeAreaRect();
+    float xPos = safeArea.getMaxX() - RIGHT_MARGIN;
+    float safeTop = safeArea.getMaxY();
+
+    float startY = hasMultiplePages ? (safeTop - 34.f) : (safeTop - TOP_MARGIN);
+
     int actualIndex = 0;
-    CCNode* firstActualChild = nullptr;
+    int visibleIndex = 0;
+
     for (CCNode* child : children) {
         if (isArrowNode(fields, child))
             continue;
 
-        if (!firstActualChild)
-            firstActualChild = child;
+        bool isVisible = (actualIndex / ELEMENTS_PER_PAGE == fields->m_currentPage);
+        child->setVisible(isVisible);
 
-        fields->m_previousActualChildren.push_back(child);
-        child->setVisible(actualIndex / ELEMENTS_PER_PAGE == fields->m_currentPage);
+        if (isVisible) {
+            fields->m_previousActualChildren.push_back(child);
+            child->setPosition({xPos, startY - (visibleIndex * ITEM_STEP_Y)});
+            visibleIndex++;
+        } else {
+            child->setPosition({-9999.f, -9999.f});
+        }
         ++actualIndex;
     }
 
-    statsMenu->updateLayout();
+    if (hasMultiplePages && visibleIndex > 0) {
+        float lastItemY = startY - ((visibleIndex - 1) * ITEM_STEP_Y);
 
-    auto winSize = CCDirector::get()->getWinSize();
-
-    if (maxPage == 0 && actualChildren != 0) {
-        CCNode* firstChild = firstActualChild;
-        if (!firstChild)
-            return;
-
-        CCNode* firstLabel = firstChild->getChildByIndex(1);
-
-        if (!firstLabel)
-            return;
-
-        float topLabelMaxY = firstChild->convertToWorldSpace({0, firstLabel->boundingBox().getMaxY()}).y;
-        float newTopLabelMaxY = winSize.height - TOP_MARGIN;
-        float topLabelMaxYDelta = topLabelMaxY - newTopLabelMaxY;
-
-        statsMenu->setPositionY(statsMenu->getPositionY() - topLabelMaxYDelta);
-    } else {
-        statsMenu->setPositionY(winSize.height - TOP_MARGIN);
+        fields->m_prevArrow->setPosition({xPos, safeTop - 15.f});
+        fields->m_nextArrow->setPosition({xPos, lastItemY - 16.f});
     }
 }
