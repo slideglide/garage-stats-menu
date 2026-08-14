@@ -1,8 +1,11 @@
+# v1.3.3
+- Change old GitHub links
+
 # v1.3.2
 - Updated to v5.9.0
-- Make the API use `geode::Label` instead of `CCLabelBMFont` for labels
-- Code cleanup
-- Fix a bug where the icon kit rope caused the stats menu to go down, and other improvements for different aspect ratios
+- Made the API use `geode::Label` instead of `CCLabelBMFont` for labels
+- Cleaned up the code
+- Fixed a bug where the icon kit rope caused the stats menu to go down, and other improvements for different aspect ratios
 
 # v1.3.1
 - Updated to v5.2.0

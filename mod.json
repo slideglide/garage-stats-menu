@@ -8,7 +8,7 @@
 	},
 	"id": "capeling.garage-stats-menu",
 	"name": "Stats Display API",
-	"version": "v1.3.2",
+	"version": "v1.3.3",
 	"developers": ["Capeling", "OmgRod", "slideglide"],
 	"description": "Allows mods to easily add custom stats into the icon kit",
 	"api": {
@@ -21,6 +21,9 @@
 	},
 	"incompatibilities": {
 		"devcmb.cleanermenu": ">=1.0.0"
+	},
+	"links": {
+		"source": "https://github.com/slideglide/garage-stats-menu"
 	},
 	"issues": {
 		"info": "If you find any issues create an issue here!",
