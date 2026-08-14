@@ -1,5 +1,5 @@
 # v1.3.3
-- Change old GitHub links
+- Changed old GitHub links
 
 # v1.3.2
 - Updated to v5.9.0
