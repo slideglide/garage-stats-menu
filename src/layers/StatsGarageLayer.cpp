@@ -134,13 +134,7 @@ void StatsGarageLayer::setupArrows() {
     fields->m_statsMenu->addChild(fields->m_nextArrow, 1, 1);
 }
 
-void StatsGarageLayer::switchPage(CCObject* sender) {
-    auto fields = m_fields.self();
-    CCNode* button = static_cast<CCNode*>(sender);
-    requestPage(fields, button->getTag());
-}
-
-void StatsGarageLayer::pageChildren(float) {
+void StatsGarageLayer::pageChildren(float dt) {
     auto fields = m_fields.self();
     auto statsMenu = fields->m_statsMenu;
 

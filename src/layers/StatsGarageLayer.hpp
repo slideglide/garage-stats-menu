@@ -21,7 +21,6 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
     };
     bool init();
 
-    void switchPage(CCObject*);
 	void setupArrows();
-    void pageChildren(float);
+    void pageChildren(float dt);
 };
