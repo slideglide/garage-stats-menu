@@ -92,7 +92,7 @@ $execute {
 }
 ```
 
-# Credits
+## Credits
 - [Capeling](https://github.com/capeling): Original creator of the mod.
 - [OmgRod](https://github.com/OmgRod): Previous maintainer of the mod.
 - [slideglide](https://github.com/slideglide): Current maintainer of the mod.
