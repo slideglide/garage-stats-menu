@@ -4,7 +4,7 @@ An API mod for **mod developers** to add their own stats to the icon kit menu.
 ### NOTE: This mod is intended for developers only. If you're not a mod developer, you likely won't need this mod.
 
 ## Setup
-- Add the mod as a dependency in your mod's `mod.json`: 
+Add the mod as a dependency in your mod's `mod.json`: 
 
 ```json
 "dependencies": {
