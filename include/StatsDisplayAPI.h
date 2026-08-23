@@ -13,21 +13,6 @@ constexpr float defaultNodeScale = 0.5f;
 
 namespace stats_api {
 
-template <typename F> void waitForGarageStats(F&& callback) {
-    if (geode::Loader::get()->isModLoaded(MY_MOD_ID)) {
-        callback();
-    } else {
-        auto* mod = geode::Loader::get()->getInstalledMod(MY_MOD_ID);
-        if (!mod) {
-            return;
-        }
-
-        geode::ModStateEvent(geode::ModEventType::Loaded, mod)
-            .listen([callback = std::forward<F>(callback)]() { callback(); })
-            .leak();
-    }
-}
-
 inline void registerStatItem(geode::ZStringView statItemId, cocos2d::CCNode* displayNode, int displayedNumber,
                              float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&registerStatItem, (statItemId, displayNode, displayedNumber, nodeScale));
