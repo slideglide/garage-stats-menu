@@ -3,7 +3,7 @@ An API mod for **mod developers** to add their own stats to the icon kit menu.
 
 ### NOTE: This mod is intended for developers only. If you're not a mod developer, you likely won't need this mod.
 
-# Setup
+## Setup
 - Add the mod as a dependency in your mod's `mod.json`: 
 
 ```
@@ -12,7 +12,7 @@ An API mod for **mod developers** to add their own stats to the icon kit menu.
 }
 ```
 
-# Usage
+## Usage
 Include `capeling.garage-stats-menu/include/StatsDisplayAPI.h` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
 ```
@@ -46,7 +46,7 @@ $execute {
 }
 ```
 
-# Migrating from the legacy API
+## Migrating from the legacy API
 The mod currently has the legacy API (`StatsDisplayAPI::getNewItem`) included for backwards compatibility; but this API will be removed in the next GD update.
 
 Migrating is very easy; all you have to do is simply stop hooking `GJGarageLayer::init` and instead use `registerStatItem` inside an `$execute` block.
@@ -92,7 +92,7 @@ $execute {
 }
 ```
 
-# Credits
+## Credits
 - [Capeling](https://github.com/capeling): Original creator of the mod.
 - [OmgRod](https://github.com/OmgRod): Previous maintainer of the mod.
 - [slideglide](https://github.com/slideglide): Current maintainer of the mod.
