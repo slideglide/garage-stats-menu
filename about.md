@@ -33,7 +33,8 @@ $execute {
     );
 
     // Update the display node of your stat item.
-    updateDisplayNode("your-stat-item-id"_spr, CCNode::create());
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayNode("your-stat-item-id"_spr, CCNode::create(), 0.5f);
 
     // Unregister your stat item.
     unregisterStatItem("your-stat-item-id"_spr);

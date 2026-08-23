@@ -33,7 +33,7 @@ inline void registerStatItem(geode::ZStringView statItemId, cocos2d::CCNode* dis
     GEODE_EVENT_EXPORT_NORES(&registerStatItem, (statItemId, displayNode, displayedNumber, nodeScale));
 
 inline void updateDisplayNode(geode::ZStringView statItemId, cocos2d::CCNode* displayNode,
-                              float nodeScale)
+                              float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&updateDisplayNode, (statItemId, displayNode, nodeScale));
 
 inline void unregisterStatItem(geode::ZStringView statItemId)
