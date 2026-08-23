@@ -6,7 +6,7 @@ An API mod for **mod developers** to add their own stats to the icon kit menu.
 # Setup
 - Add the mod as a dependency in your mod's `mod.json`: 
 
-```json
+```
 "dependencies": {
     "capeling.garage-stats-menu": ">=v1.4.0"
 }
@@ -15,7 +15,7 @@ An API mod for **mod developers** to add their own stats to the icon kit menu.
 # Usage
 Include `capeling.garage-stats-menu/include/StatsDisplayAPI.h` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
-```cpp
+```
 #include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
 
 using namespace stats_api;
@@ -53,7 +53,7 @@ Migrating is very easy; all you have to do is simply stop hooking `GJGarageLayer
 
 Here's an example code that uses the old API:
 
-```cpp
+```
 #include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
 
 class $modify(GJGarageLayer) {
@@ -77,7 +77,7 @@ class $modify(GJGarageLayer) {
 
 And here's how it can be replaced with the new API:
 
-```cpp
+```
 #include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
 
 using namespace stats_api;
