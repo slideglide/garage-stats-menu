@@ -112,7 +112,6 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_nextArrow = createArrowBtn(true);
         fields->m_nextArrow->setID("next-arrow"_spr);
 
-        // Menuless Button layout container
         fields->m_arrowContainer = CCNode::create();
         fields->m_arrowContainer->setID("arrow-container"_spr);
         fields->m_arrowContainer->setAnchorPoint({1.f, 1.f});
@@ -182,11 +181,13 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
             }
         }
 
-        for (const auto& [id, stat] : StatsManager::get()->getManagedStats()) {
-            if (auto node = stat.displayNode.lock()) {
-                addStatItem(fields->m_allStatNodes, id, node, stat.nodeScale, stat.displayedNumber);
+        StatsManager::get()->forEachStat([this, fields](std::string_view id, StatItem& stat) {
+            if (stat.provider) {
+                if (auto* node = stat.provider()) {
+                    addStatItem(fields->m_allStatNodes, id, node, stat.nodeScale, stat.displayedNumber);
+                }
             }
-        }
+        });
 
         const auto safeArea = geode::utils::getSafeAreaRect();
 

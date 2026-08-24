@@ -13,10 +13,10 @@ Add the mod as a dependency in your mod's `mod.json`:
 ```
 
 ## Usage
-Include `capeling.garage-stats-menu/include/StatsDisplayAPI.h` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
+Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
 ```
-#include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
+#include <capeling.garage-stats-menu/include/stats_api.hpp>
 
 using namespace stats_api;
 
@@ -24,13 +24,28 @@ $execute {
     registerStatItem(
         // A unique ID for your stat item.
         "your-stat-item-id"_spr,
-        // Lambda that determines the display node for your stat item (CCNode*).
+        // Lambda that determines the display node for your stat item (cocos2d::CCNode*).
         []() -> cocos2d::CCNode* {
             return cocos2d::CCNode::create();
         },
         // The displayed number for your stat item.
         1,
         // Optional: The node scale for your stat item. (Default: 0.5f)
+        1.f
+    );
+
+    #include <Geode/ui/Button.hpp>
+
+    registerStatItemButton(
+        // A unique ID for your stat item.
+        "your-stat-item-id"_spr,
+        // Lambda that determines the button for your stat item (geode::Button*).
+        []() -> geode::Button* {
+            return geode::Button::create([](auto) {});
+        },
+        // The displayed number for your stat item.
+        1,
+        // Optional: The node scale for your stat item. (Default: 0.5f).
         1.f
     );
 
@@ -41,7 +56,7 @@ $execute {
     // Unregister your stat item.
     unregisterStatItem("your-stat-item-id"_spr);
 
-    // Get the displayed number of your stat item, returns a geode::Result<int>.
+    // Get the displayed number of your stat item.
     getDisplayedNumber("your-stat-item-id"_spr).unwrapOrDefault();
 
     // Set the displayed number of your stat item.
@@ -52,7 +67,7 @@ $execute {
 ## Migrating from the legacy API
 Migrating is very easy; Change the header from `StatsDisplayAPI.h` to `stats_api.hpp` and simply stop hooking `GJGarageLayer::init` and instead use `registerStatItem` inside an `$execute` block.
 
-Here's an example code that uses the old API:
+Here's an example code that uses the legacy API:
 
 ```
 #include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
@@ -76,7 +91,7 @@ class $modify(GJGarageLayer) {
 };
 ```
 
-And here's how it can be replaced with the new API:
+And here's how it can be migrated away from the legacy API to the new API:
 
 ```
 #include <capeling.garage-stats-menu/include/stats_api.hpp>
@@ -87,7 +102,7 @@ $execute {
     registerStatItem(
         "fire-shards"_spr,
         []() -> cocos2d::CCNode* {
-            CCSprite::createWithSpriteFrameName("fireShardSmall_001.png"),
+            return cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png");
         },
         GameStatsManager::sharedState()->getStat("16"),
         0.8f

@@ -11,7 +11,7 @@
 #include <vector>
 
 struct StatItem {
-    geode::WeakRef<cocos2d::CCNode> displayNode;
+    mutable stats_api::NodeProvider provider;
     int displayedNumber;
     float nodeScale;
 };
@@ -23,14 +23,15 @@ private:
 public:
     static StatsManager* get();
 
-    void registerStatItem(geode::ZStringView statItemId, cocos2d::CCNode* node, int number, float scale);
-    void updateDisplayNode(geode::ZStringView statItemId, cocos2d::CCNode* node, float scale);
+    void registerStatItem(geode::ZStringView statItemId, stats_api::NodeProvider provider, int number, float scale);
+    void updateDisplayNode(geode::ZStringView statItemId, stats_api::NodeProvider provider, float scale);
     void unregisterStatItem(geode::ZStringView statItemId);
 
     geode::Result<int> getDisplayedNumber(geode::ZStringView statItemId);
     void setDisplayedNumber(geode::ZStringView statItemId, int number);
 
-    std::vector<std::pair<std::string, StatItem>> getManagedStats() const;
+    using StatCallback = geode::Function<void(std::string_view key, StatItem& item)>;
+    void forEachStat(StatCallback callback);
 
     auto const& getStats() const { return m_stats; }
 };

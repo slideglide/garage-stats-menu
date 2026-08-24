@@ -7,17 +7,17 @@ StatsManager* StatsManager::get() {
     return &instance;
 }
 
-void StatsManager::registerStatItem(geode::ZStringView id, cocos2d::CCNode* node, int number, float scale) {
+void StatsManager::registerStatItem(geode::ZStringView id, stats_api::NodeProvider provider, int number, float scale) {
     m_stats.insert_or_assign(id, StatItem{
-        .displayNode = node,
+        .provider = std::move(provider),
         .displayedNumber = number,
         .nodeScale = scale,
     });
 }
 
-void StatsManager::updateDisplayNode(geode::ZStringView id, cocos2d::CCNode* node, float scale) {
+void StatsManager::updateDisplayNode(geode::ZStringView id, stats_api::NodeProvider provider, float scale) {
     if (auto it = m_stats.find(id); it != m_stats.end()) {
-        it->second.displayNode = node;
+        it->second.provider = std::move(provider);
         it->second.nodeScale = scale;
     }
 }
@@ -40,17 +40,19 @@ void StatsManager::setDisplayedNumber(geode::ZStringView id, int number) {
     }
 }
 
-std::vector<std::pair<std::string, StatItem>> StatsManager::getManagedStats() const {
-    std::vector<std::pair<std::string, StatItem>> result;
-    result.reserve(m_stats.size());
+void StatsManager::forEachStat(StatCallback callback) {
+    std::vector<std::string> sortedKeys;
+    sortedKeys.reserve(m_stats.size());
 
-    for (auto const& [key, val] : m_stats) {
-        result.emplace_back(key, val);
+    for (auto const& [key, _] : m_stats) {
+        sortedKeys.push_back(key);
     }
 
-    std::sort(result.begin(), result.end(), [](auto const& a, auto const& b) {
-        return a.first < b.first;
-    });
+    std::sort(sortedKeys.begin(), sortedKeys.end());
 
-    return result;
+    for (auto const& key : sortedKeys) {
+        if (auto it = m_stats.find(key); it != m_stats.end()) {
+            callback(key, it->second);
+        }
+    }
 }

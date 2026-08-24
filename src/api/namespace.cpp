@@ -1,15 +1,22 @@
 #define GEODE_DEFINE_EVENT_EXPORTS
 #include <Geode/Result.hpp>
 #include <Geode/utils/ZStringView.hpp>
+#include <stats_api.hpp>
 #include "api.hpp"
 
 namespace stats_api {
-void registerStatItem(geode::ZStringView statItemId, cocos2d::CCNode* node, int number, float scale) {
-    StatsManager::get()->registerStatItem(statItemId, node, number, scale);
+void registerStatItem(geode::ZStringView statItemId, NodeProvider provider, int number, float scale) {
+    StatsManager::get()->registerStatItem(statItemId, std::move(provider), number, scale);
 }
 
-void updateDisplayNode(geode::ZStringView statItemId, cocos2d::CCNode* node, float scale) {
-    StatsManager::get()->updateDisplayNode(statItemId, node, scale);
+void registerStatItemButton(geode::ZStringView statItemId, ButtonProvider buttonProvider, int number, float scale) {
+    StatsManager::get()->registerStatItem(statItemId, [bp = std::move(buttonProvider)]() mutable -> cocos2d::CCNode* {
+        return bp ? bp() : nullptr;
+    }, number, scale);
+}
+
+void updateDisplayNode(geode::ZStringView statItemId, NodeProvider provider, float scale) {
+    StatsManager::get()->updateDisplayNode(statItemId, std::move(provider), scale);
 }
 
 void unregisterStatItem(geode::ZStringView statItemId) { StatsManager::get()->unregisterStatItem(statItemId); }
