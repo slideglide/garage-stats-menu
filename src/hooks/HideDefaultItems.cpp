@@ -2,7 +2,7 @@
 
 using namespace geode::prelude;
 
-class $modify(MyGJGarageLayer, GJGarageLayer) {
+class $modify(HideDefaultItemsLayer, GJGarageLayer) {
     bool init() {
         if (!GJGarageLayer::init()) {
             return false;

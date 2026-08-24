@@ -6,9 +6,6 @@
 #include <Geode/utils/StringMap.hpp>
 #include <Geode/utils/ZStringView.hpp>
 #include <Geode/utils/cocos.hpp>
-#include <string>
-#include <utility>
-#include <vector>
 
 struct StatItem {
     mutable stats_api::NodeProvider provider;
@@ -23,12 +20,12 @@ private:
 public:
     static StatsManager* get();
 
-    void registerStatItem(geode::ZStringView statItemId, stats_api::NodeProvider provider, int number, float scale);
-    void updateDisplayNode(geode::ZStringView statItemId, stats_api::NodeProvider provider, float scale);
-    void unregisterStatItem(geode::ZStringView statItemId);
+    void registerStatItem(geode::ZStringView itemID, stats_api::NodeProvider provider, int number, float scale);
+    void updateDisplayNode(geode::ZStringView itemID, stats_api::NodeProvider provider, float scale);
+    void unregisterStatItem(geode::ZStringView itemID);
 
-    geode::Result<int> getDisplayedNumber(geode::ZStringView statItemId);
-    void setDisplayedNumber(geode::ZStringView statItemId, int number);
+    geode::Result<int> getDisplayedNumber(geode::ZStringView itemID);
+    void setDisplayedNumber(geode::ZStringView itemID, int number);
 
     using StatCallback = geode::Function<void(std::string_view key, StatItem& item)>;
     void forEachStat(StatCallback callback);

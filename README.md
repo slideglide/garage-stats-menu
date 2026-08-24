@@ -8,7 +8,7 @@ Add the mod as a dependency in your mod's `mod.json`:
 
 ```json
 "dependencies": {
-    "capeling.garage-stats-menu": ">=v1.4.0"
+    "capeling.garage-stats-menu": ">=v2.0.0"
 }
 ```
 
@@ -24,8 +24,8 @@ $execute {
     registerStatItem(
         // A unique ID for your stat item.
         "your-stat-item-id"_spr,
-        // Lambda that determines the display node for your stat item (cocos2d::CCNode*).
-        []() -> cocos2d::CCNode* {
+        // Lambda returning any CCNode (e.g., CCSprite).
+        []() {
             return cocos2d::CCNode::create();
         },
         // The displayed number for your stat item.
@@ -37,8 +37,8 @@ $execute {
     registerStatItemButton(
         // A unique ID for your stat item.
         "your-stat-item-id"_spr,
-        // Lambda that determines the button for your stat item (geode::Button*).
-        []() -> geode::Button* {
+        // Lambda returning a geode::Button*.
+        []() {
             return geode::Button::create([](auto) {});
         },
         // The displayed number for your stat item.
@@ -49,7 +49,7 @@ $execute {
 
     // Update the display node of your stat item.
     // The node scale parameter is optional! The default scale is 0.5f.
-    updateDisplayNode("your-stat-item-id"_spr, CCNode::create(), 0.5f);
+    updateDisplayNode("your-stat-item-id"_spr, cocos2d::CCNode::create(), 0.5f);
 
     // Unregister your stat item.
     unregisterStatItem("your-stat-item-id"_spr);

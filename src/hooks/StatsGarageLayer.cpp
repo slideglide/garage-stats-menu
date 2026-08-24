@@ -38,8 +38,8 @@ static const auto DEFAULT_STATS = std::to_array<DefaultStat>({
 
 class $modify(StatsGarageLayer, GJGarageLayer) {
     static void onModify(auto& self) {
-        if (!self.setHookPriority("GJGarageLayer::init", geode::Priority::FirstPost)) {
-            geode::log::error("Failed to set hook priority for GJGarageLayer::init");
+        if (!self.setHookPriority("GJGarageLayer::init", Priority::FirstPost)) {
+            log::error("Failed to set hook priority for GJGarageLayer::init");
         }
     }
 
