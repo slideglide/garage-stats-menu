@@ -1,6 +1,6 @@
 #pragma once
 
-#include <StatsDisplayAPI.h>
+#include <stats_api.hpp>
 #include <Geode/cocos/base_nodes/CCNode.h>
 #include <Geode/Result.hpp>
 #include <Geode/utils/StringMap.hpp>

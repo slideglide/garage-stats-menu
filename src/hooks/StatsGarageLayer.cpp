@@ -1,15 +1,20 @@
 #include <Geode/modify/GJGarageLayer.hpp>
 #include <Geode/ui/Button.hpp>
+#include <algorithm>
 #include <array>
 #include <string_view>
+#include <vector>
+
 #include "../api/api.hpp"
+#include "../utils.hpp"
 
 using namespace geode::prelude;
 
-constexpr int ELEMENTS_PER_PAGE = 6;
+constexpr int ELEMENTS_PER_PAGE = 10;
 constexpr float TOP_MARGIN = 12.f;
 constexpr float RIGHT_MARGIN = 18.f;
-constexpr float ITEM_STEP_Y = 15.f;
+constexpr float ITEM_GAP = 3.f;
+constexpr float ARROW_GAP = 4.f;
 constexpr float ARROW_SCALE = 0.5f;
 
 struct DefaultStat {
@@ -38,148 +43,128 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
     }
 
     struct Fields {
-        CCMenu* m_statsMenu = nullptr;
-        CCMenuItemSpriteExtra* m_prevArrow = nullptr;
-        CCMenuItemSpriteExtra* m_nextArrow = nullptr;
+        CCNode* m_statsContainer = nullptr;
+        CCNode* m_arrowContainer = nullptr;
+        Button* m_prevArrow = nullptr;
+        Button* m_nextArrow = nullptr;
+        std::vector<Ref<CCNode>> m_allStatNodes;
         int m_currentPage = 0;
         int m_requestedPage = 0;
+        int m_maxPage = 0;
     };
+
+    void layoutPage() {
+        auto* fields = m_fields.self();
+        auto& all = fields->m_allStatNodes;
+
+        const int actual = static_cast<int>(all.size());
+        fields->m_maxPage = actual <= 0 ? 0 : (actual - 1) / ELEMENTS_PER_PAGE;
+        fields->m_currentPage = std::clamp(fields->m_requestedPage, 0, fields->m_maxPage);
+        fields->m_requestedPage = fields->m_currentPage;
+
+        const bool hasMultiplePages = actual > ELEMENTS_PER_PAGE;
+
+        fields->m_statsContainer->removeAllChildrenWithCleanup(false);
+
+        const int start = fields->m_currentPage * ELEMENTS_PER_PAGE;
+        const int end = std::min(start + ELEMENTS_PER_PAGE, actual);
+
+        for (int i = start; i < end; ++i) {
+            fields->m_statsContainer->addChild(all[i]);
+        }
+
+        fields->m_statsContainer->updateLayout();
+
+        fields->m_arrowContainer->setVisible(hasMultiplePages);
+        fields->m_prevArrow->setEnabled(hasMultiplePages && fields->m_currentPage > 0);
+        fields->m_prevArrow->setOpacity(fields->m_currentPage > 0 ? 255 : 100);
+        fields->m_nextArrow->setEnabled(hasMultiplePages && fields->m_currentPage < fields->m_maxPage);
+        fields->m_nextArrow->setOpacity(fields->m_currentPage < fields->m_maxPage ? 255 : 100);
+    }
 
     void setupArrows() {
         auto* fields = m_fields.self();
 
-        auto createArrow = [this, fields](bool isNext) {
-            auto* arrow = CCMenuItemExt::createSpriteExtraWithFrameName(
-                "GJ_arrow_02_001.png", ARROW_SCALE, [fields, isNext](auto) {
-                    if (!fields->m_statsMenu || fields->m_statsMenu->getChildrenCount() < 2) {
-                        fields->m_currentPage = 0;
-                        return;
-                    }
-
-                    int actual = 0;
-                    for (CCNode* child : fields->m_statsMenu->getChildrenExt()) {
-                        if (child != fields->m_prevArrow && child != fields->m_nextArrow) {
-                            ++actual;
-                        }
-                    }
-
-                    const int maxPage = actual <= 0 ? 0 : (actual - 1) / ELEMENTS_PER_PAGE;
-
-                    if (isNext) {
-                        fields->m_requestedPage = (fields->m_currentPage + 1 > maxPage) ? 0 : fields->m_currentPage + 1;
-                    } else {
-                        fields->m_requestedPage = (fields->m_currentPage - 1 < 0) ? maxPage : fields->m_currentPage - 1;
-                    }
-                });
-
-            arrow->setRotation(90.f);
-            return arrow;
-        };
-
-        fields->m_prevArrow = createArrow(false);
-        fields->m_prevArrow->setID("prev-arrow"_spr);
-        fields->m_statsMenu->addChild(fields->m_prevArrow, -1, -1);
-
-        fields->m_nextArrow = createArrow(true);
-        if (auto* sprite = static_cast<CCSprite*>(fields->m_nextArrow->getNormalImage())) {
-            sprite->setFlipX(true);
-        }
-        fields->m_nextArrow->setID("next-arrow"_spr);
-        fields->m_statsMenu->addChild(fields->m_nextArrow, 1, 1);
-    }
-
-    void pageChildren(float dt) {
-        auto* fields = m_fields.self();
-        auto* statsMenu = fields->m_statsMenu;
-
-        if (!statsMenu) {
-            return;
-        }
-
-        auto children = statsMenu->getChildrenExt();
-        if (children.size() < 2) {
-            return;
-        }
-
-        auto isArrow = [fields](const CCNode* node) {
-            return node == fields->m_prevArrow || node == fields->m_nextArrow;
-        };
-
-        int actualChildren = 0;
-        for (CCNode* child : children) {
-            if (!isArrow(child)) {
-                ++actualChildren;
+        auto createArrowBtn = [this, fields](bool isNext) {
+            auto* spr = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
+            if (isNext) {
+                spr->setFlipX(true);
             }
-        }
 
-        const bool hasMultiplePages = actualChildren > ELEMENTS_PER_PAGE;
-        const int maxPage = actualChildren <= 0 ? 0 : (actualChildren - 1) / ELEMENTS_PER_PAGE;
+            auto* btn = Button::createWithNode(
+                spr,
+                [this, fields, isNext](auto) {
+                    fields->m_requestedPage = isNext
+                        ? std::min(fields->m_currentPage + 1, fields->m_maxPage)
+                        : std::max(fields->m_currentPage - 1, 0);
+                    this->layoutPage();
+                }
+            );
 
-        fields->m_currentPage = std::min(fields->m_requestedPage, maxPage);
-        fields->m_prevArrow->setVisible(hasMultiplePages);
-        fields->m_nextArrow->setVisible(hasMultiplePages);
+            btn->setScale(ARROW_SCALE);
+            btn->setRotation(90.f);
+            return btn;
+        };
+
+        fields->m_prevArrow = createArrowBtn(false);
+        fields->m_prevArrow->setID("prev-arrow"_spr);
+
+        fields->m_nextArrow = createArrowBtn(true);
+        fields->m_nextArrow->setID("next-arrow"_spr);
+
+        // Menuless Button layout container
+        fields->m_arrowContainer = CCNode::create();
+        fields->m_arrowContainer->setID("arrow-container"_spr);
+        fields->m_arrowContainer->setAnchorPoint({1.f, 1.f});
+        fields->m_arrowContainer->setContentSize({30.f, 40.f});
+
+        fields->m_arrowContainer->setLayout(
+            ColumnLayout::create()
+                ->setAxisReverse(true)
+                ->setGap(ARROW_GAP)
+                ->setAutoScale(false)
+        );
+        fields->m_arrowContainer->addChild(fields->m_prevArrow);
+        fields->m_arrowContainer->addChild(fields->m_nextArrow);
+        fields->m_arrowContainer->updateLayout();
 
         const auto safeArea = geode::utils::getSafeAreaRect();
-        const float xPos = safeArea.getMaxX() - RIGHT_MARGIN;
-        const float safeTop = safeArea.getMaxY();
-        const float startY = hasMultiplePages ? (safeTop - 34.f) : (safeTop - TOP_MARGIN);
-
-        int actualIndex = 0;
-        int visibleIndex = 0;
-
-        auto updateNodeVisibility = [&](CCNode* child) {
-            const bool isVisible = (actualIndex / ELEMENTS_PER_PAGE == fields->m_currentPage);
-            child->setVisible(isVisible);
-
-            if (isVisible) {
-                child->setPosition({xPos, startY - (visibleIndex * ITEM_STEP_Y)});
-                visibleIndex++;
-            } else {
-                child->setPosition({-9999.f, -9999.f});
-            }
-            ++actualIndex;
-        };
-
-        for (CCNode* child : children) {
-            if (!isArrow(child)) {
-                updateNodeVisibility(child);
-            }
-        }
-
-        auto updateArrowPositions = [&]() {
-            if (hasMultiplePages && visibleIndex > 0) {
-                const float lastItemY = startY - ((visibleIndex - 1) * ITEM_STEP_Y);
-                fields->m_prevArrow->setPosition({xPos, safeTop - 15.f});
-                fields->m_nextArrow->setPosition({xPos, lastItemY - 16.f});
-            }
-        };
-
-        updateArrowPositions();
+        fields->m_arrowContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
+        this->addChild(fields->m_arrowContainer);
     }
 
-    static void addStatItem(CCMenu* menu, std::string_view id, CCNode* icon, float iconScale, int number) {
-        auto* container = CCMenu::create();
-        container->setID(fmt::format("{}-container", id));
-        container->setContentSize({0.f, 0.f});
+    static void addStatItem(std::vector<Ref<CCNode>>& target, std::string_view id, CCNode* icon, float scale, int number) {
+        if (!icon) return;
 
-        if (icon) {
-            icon->setID(fmt::format("{}-icon", id));
-            icon->setScale(iconScale);
-            if (icon->getParent()) {
-                icon->removeFromParentAndCleanup(false);
-            }
-            icon->setPosition({0.f, 0.f});
-            container->addChild(icon);
+        if (icon->getParent()) {
+            icon->removeFromParentAndCleanup(false);
         }
 
-        auto* label = geode::Label::create(fmt::to_string(number), "bigFont.fnt");
+        icon->setID(fmt::format("{}-icon", id));
+        icon->setScale(scale);
+
+        const std::string displayStr = stats::utils::convertNumToAbbreviatedString(number);
+        auto* label = Label::create(displayStr, "bigFont.fnt");
         label->setID(fmt::format("{}-label", id));
         label->setScale(0.34f);
-        label->setAnchorPoint({1.0f, 0.5f});
-        label->setPosition({-12.0f, 0.5f});
-        container->addChild(label);
 
-        menu->addChild(container);
+        auto* container = CCNode::create();
+        container->setID(fmt::format("{}-container", id));
+        container->setContentSize({80.f, 15.f});
+        container->setAnchorPoint({1.f, 0.5f});
+
+        container->setLayout(
+            RowLayout::create()
+                ->setAxisAlignment(AxisAlignment::End)
+                ->setAutoScale(false)
+                ->setGap(4.f)
+        );
+
+        container->addChild(label);
+        container->addChild(icon);
+        container->updateLayout();
+
+        target.push_back(container);
     }
 
     bool init() {
@@ -189,27 +174,42 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
         auto* fields = m_fields.self();
 
-        fields->m_statsMenu = CCMenu::create();
-        fields->m_statsMenu->setID("stats-menu"_spr);
-        fields->m_statsMenu->setZOrder(2);
-        fields->m_statsMenu->setPosition({0.f, 0.f});
-        this->addChild(fields->m_statsMenu);
-
         for (const auto& def : DEFAULT_STATS) {
             if (Mod::get()->getSettingValue<bool>(def.setting)) {
                 auto* sprite = CCSprite::createWithSpriteFrameName(def.spriteFrame.c_str());
                 const int num = GameStatsManager::sharedState()->getStat(def.statNum.c_str());
-                addStatItem(fields->m_statsMenu, def.id, sprite, def.scale, num);
+                addStatItem(fields->m_allStatNodes, def.id, sprite, def.scale, num);
             }
         }
 
         for (const auto& [id, stat] : StatsManager::get()->getManagedStats()) {
-            auto node = stat.displayNode.lock();
-            addStatItem(fields->m_statsMenu, id, node, stat.nodeScale, stat.displayedNumber);
+            if (auto node = stat.displayNode.lock()) {
+                addStatItem(fields->m_allStatNodes, id, node, stat.nodeScale, stat.displayedNumber);
+            }
         }
 
+        const auto safeArea = geode::utils::getSafeAreaRect();
+
+        fields->m_statsContainer = CCNode::create();
+        fields->m_statsContainer->setID("stats-container"_spr);
+        fields->m_statsContainer->setZOrder(2);
+        fields->m_statsContainer->setAnchorPoint({1.f, 1.f});
+        fields->m_statsContainer->setContentSize({100.f, safeArea.size.height - 40.f});
+        fields->m_statsContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
+
+        fields->m_statsContainer->setLayout(
+            ColumnLayout::create()
+                ->setAxisReverse(true)
+                ->setAxisAlignment(AxisAlignment::End)
+                ->setCrossAxisAlignment(AxisAlignment::End)
+                ->setCrossAxisOverflow(true)
+                ->setGap(ITEM_GAP)
+                ->setAutoScale(true)
+        );
+        this->addChild(fields->m_statsContainer);
+
         setupArrows();
-        this->schedule(schedule_selector(StatsGarageLayer::pageChildren));
+        layoutPage();
 
         return true;
     }
