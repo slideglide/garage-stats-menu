@@ -8,11 +8,13 @@
 #include "../api/api.hpp"
 #include "../utils.hpp"
 
+// im sorry that this code is a mess; i tried my best to account for all resolutions and aspect ratios
+
 using namespace geode::prelude;
 
 constexpr int ELEMENTS_PER_PAGE = 10;
-constexpr float TOP_MARGIN = 12.f;
-constexpr float RIGHT_MARGIN = 18.f;
+constexpr float TOP_MARGIN = 6.f;
+constexpr float RIGHT_MARGIN = 8.f;
 constexpr float ITEM_GAP = 3.f;
 constexpr float ARROW_SCALE = 0.5f;
 
@@ -52,6 +54,22 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         int m_requestedPage = 0;
         int m_maxPage = 0;
     };
+
+    float getAdaptiveScale(const CCRect& safeArea) {
+        constexpr float TARGET_UNSCALED_HEIGHT = 215.f;
+
+        const float maxAllowedHeight = std::max(100.f, safeArea.size.height - 120.f);
+        const float heightScale = maxAllowedHeight / TARGET_UNSCALED_HEIGHT;
+
+        const float aspectRatio = safeArea.size.width / std::max(1.0f, safeArea.size.height);
+        float aspectScale = 1.0f;
+        if (aspectRatio < 1.5f) {
+            aspectScale = std::max(0.65f, aspectRatio / 1.5f);
+        }
+
+        const float calculatedScale = std::min(heightScale, aspectScale) * 0.85f;
+        return std::clamp(calculatedScale, 0.55f, 0.85f);
+    }
 
     void layoutPage() {
         auto* fields = m_fields.self();
@@ -193,6 +211,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         });
 
         const auto safeArea = geode::utils::getSafeAreaRect();
+        const float adaptiveScale = getAdaptiveScale(safeArea);
 
         fields->m_statsContainer = CCNode::create();
         fields->m_statsContainer->setID("stats-container"_spr);
@@ -200,7 +219,12 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_statsContainer->ignoreAnchorPointForPosition(false);
         fields->m_statsContainer->setAnchorPoint({1.f, 1.f});
         fields->m_statsContainer->setContentSize({80.f, safeArea.size.height - 40.f});
-        fields->m_statsContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
+        fields->m_statsContainer->setPosition({
+            safeArea.getMaxX() - RIGHT_MARGIN,
+            safeArea.getMaxY() - TOP_MARGIN
+        });
+        
+        fields->m_statsContainer->setScale(adaptiveScale);
 
         fields->m_statsContainer->setLayout(
             ColumnLayout::create()
