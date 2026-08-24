@@ -1,5 +1,7 @@
 #include <Geode/modify/GJGarageLayer.hpp>
 #include <Geode/ui/Button.hpp>
+#include <array>
+#include <string_view>
 #include "../api/api.hpp"
 
 using namespace geode::prelude;
@@ -10,26 +12,23 @@ constexpr float RIGHT_MARGIN = 18.f;
 constexpr float ITEM_STEP_Y = 15.f;
 constexpr float ARROW_SCALE = 0.5f;
 
-static bool isArrowNode(CCMenuItemSpriteExtra* prevArrow, CCMenuItemSpriteExtra* nextArrow, CCNode* node) {
-    return node == prevArrow || node == nextArrow;
-}
+struct DefaultStat {
+    std::string_view setting;
+    std::string_view id;
+    ZStringView spriteFrame;
+    ZStringView statNum;
+    float scale;
+};
 
-static int getActualChildrenCount(CCMenuItemSpriteExtra* prevArrow, CCMenuItemSpriteExtra* nextArrow, CCNode* statsMenu) {
-    if (!statsMenu) {
-        return 0;
-    }
-
-    int count = 0;
-    for (CCNode* child : statsMenu->getChildrenExt()) {
-        if (isArrowNode(prevArrow, nextArrow, child)) {
-            continue;
-        }
-        ++count;
-    }
-    return count;
-}
-
-static int getMaxPage(int actualChildren) { return actualChildren <= 0 ? 0 : (actualChildren - 1) / ELEMENTS_PER_PAGE; }
+static const auto DEFAULT_STATS = std::to_array<DefaultStat>({
+    {"stars-stat", "stars", "GJ_starsIcon_001.png", "6", 0.54f},
+    {"moons-stat", "moons", "GJ_moonsIcon_001.png", "28", 0.54f},
+    {"gold-coins-stat", "coins", "GJ_coinsIcon_001.png", "8", 0.51f},
+    {"user-coins-stat", "user-coins", "GJ_coinsIcon2_001.png", "12", 0.51f},
+    {"orbs-stat", "orbs", "currencyOrbIcon_001.png", "14", 0.54f},
+    {"diamonds-stat", "diamonds", "GJ_diamondsIcon_001.png", "13", 0.6f},
+    {"diamond-shards-stat", "diamond-shards", "currencyDiamondIcon_001.png", "29", 0.54f},
+});
 
 class $modify(StatsGarageLayer, GJGarageLayer) {
     static void onModify(auto& self) {
@@ -40,65 +39,58 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
     struct Fields {
         CCMenu* m_statsMenu = nullptr;
-        int m_currentPage = 0;
-        int m_requestedPage = 0;
         CCMenuItemSpriteExtra* m_prevArrow = nullptr;
         CCMenuItemSpriteExtra* m_nextArrow = nullptr;
+        int m_currentPage = 0;
+        int m_requestedPage = 0;
     };
 
     void setupArrows() {
-        auto fields = m_fields.self();
+        auto* fields = m_fields.self();
 
-        fields->m_prevArrow = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_02_001.png", ARROW_SCALE, [fields](auto) {
-            if (!fields->m_statsMenu) {
-                return;
-            }
-            
-            if (fields->m_statsMenu->getChildrenCount() < 2) {
-                fields->m_currentPage = 0;
-                return;
-            }
+        auto createArrow = [this, fields](bool isNext) {
+            auto* arrow = CCMenuItemExt::createSpriteExtraWithFrameName(
+                "GJ_arrow_02_001.png", ARROW_SCALE, [fields, isNext](auto) {
+                    if (!fields->m_statsMenu || fields->m_statsMenu->getChildrenCount() < 2) {
+                        fields->m_currentPage = 0;
+                        return;
+                    }
 
-            int actual = getActualChildrenCount(fields->m_prevArrow, fields->m_nextArrow, fields->m_statsMenu);
-            int maxPage = getMaxPage(actual);
-            if (fields->m_currentPage - 1 < 0) {
-                fields->m_requestedPage = maxPage;
-            } else {
-                fields->m_requestedPage = fields->m_currentPage - 1;
-            }
-        });
-        fields->m_prevArrow->setRotation(90);
+                    int actual = 0;
+                    for (CCNode* child : fields->m_statsMenu->getChildrenExt()) {
+                        if (child != fields->m_prevArrow && child != fields->m_nextArrow) {
+                            ++actual;
+                        }
+                    }
+
+                    const int maxPage = actual <= 0 ? 0 : (actual - 1) / ELEMENTS_PER_PAGE;
+
+                    if (isNext) {
+                        fields->m_requestedPage = (fields->m_currentPage + 1 > maxPage) ? 0 : fields->m_currentPage + 1;
+                    } else {
+                        fields->m_requestedPage = (fields->m_currentPage - 1 < 0) ? maxPage : fields->m_currentPage - 1;
+                    }
+                });
+
+            arrow->setRotation(90.f);
+            return arrow;
+        };
+
+        fields->m_prevArrow = createArrow(false);
         fields->m_prevArrow->setID("prev-arrow"_spr);
-
         fields->m_statsMenu->addChild(fields->m_prevArrow, -1, -1);
 
-        fields->m_nextArrow = CCMenuItemExt::createSpriteExtraWithFrameName("GJ_arrow_02_001.png", ARROW_SCALE, [fields](auto) {
-            if (!fields->m_statsMenu) {
-                return;
-            }
-            if (fields->m_statsMenu->getChildrenCount() < 2) {
-                fields->m_currentPage = 0;
-                return;
-            }
-            int actual = getActualChildrenCount(fields->m_prevArrow, fields->m_nextArrow, fields->m_statsMenu);
-            int maxPage = getMaxPage(actual);
-            if (fields->m_currentPage + 1 > maxPage) {
-                fields->m_requestedPage = 0;
-            } else {
-                fields->m_requestedPage = fields->m_currentPage + 1;
-            }
-        });
-        static_cast<CCSprite*>(fields->m_nextArrow->getNormalImage())->setFlipX(true);
-        fields->m_nextArrow->setRotation(90);
-        fields->m_nextArrow->setScale(ARROW_SCALE);
+        fields->m_nextArrow = createArrow(true);
+        if (auto* sprite = static_cast<CCSprite*>(fields->m_nextArrow->getNormalImage())) {
+            sprite->setFlipX(true);
+        }
         fields->m_nextArrow->setID("next-arrow"_spr);
-
         fields->m_statsMenu->addChild(fields->m_nextArrow, 1, 1);
     }
 
     void pageChildren(float dt) {
-        auto fields = m_fields.self();
-        auto statsMenu = fields->m_statsMenu;
+        auto* fields = m_fields.self();
+        auto* statsMenu = fields->m_statsMenu;
 
         if (!statsMenu) {
             return;
@@ -109,34 +101,34 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
             return;
         }
 
-        int actualChildren = getActualChildrenCount(fields->m_prevArrow, fields->m_nextArrow, statsMenu);
+        auto isArrow = [fields](const CCNode* node) {
+            return node == fields->m_prevArrow || node == fields->m_nextArrow;
+        };
 
-        fields->m_currentPage = fields->m_requestedPage;
+        int actualChildren = 0;
+        for (CCNode* child : children) {
+            if (!isArrow(child)) {
+                ++actualChildren;
+            }
+        }
 
-        bool hasMultiplePages = actualChildren > ELEMENTS_PER_PAGE;
+        const bool hasMultiplePages = actualChildren > ELEMENTS_PER_PAGE;
+        const int maxPage = actualChildren <= 0 ? 0 : (actualChildren - 1) / ELEMENTS_PER_PAGE;
+
+        fields->m_currentPage = std::min(fields->m_requestedPage, maxPage);
         fields->m_prevArrow->setVisible(hasMultiplePages);
         fields->m_nextArrow->setVisible(hasMultiplePages);
 
-        int maxPage = getMaxPage(actualChildren);
-        if (fields->m_currentPage > maxPage) {
-            fields->m_currentPage = maxPage;
-        }
-
-        auto safeArea = geode::utils::getSafeAreaRect();
-        float xPos = safeArea.getMaxX() - RIGHT_MARGIN;
-        float safeTop = safeArea.getMaxY();
-
-        float startY = hasMultiplePages ? (safeTop - 34.f) : (safeTop - TOP_MARGIN);
+        const auto safeArea = geode::utils::getSafeAreaRect();
+        const float xPos = safeArea.getMaxX() - RIGHT_MARGIN;
+        const float safeTop = safeArea.getMaxY();
+        const float startY = hasMultiplePages ? (safeTop - 34.f) : (safeTop - TOP_MARGIN);
 
         int actualIndex = 0;
         int visibleIndex = 0;
 
-        for (CCNode* child : children) {
-            if (isArrowNode(fields->m_prevArrow, fields->m_nextArrow, child)) {
-                continue;
-            }
-
-            bool isVisible = (actualIndex / ELEMENTS_PER_PAGE == fields->m_currentPage);
+        auto updateNodeVisibility = [&](CCNode* child) {
+            const bool isVisible = (actualIndex / ELEMENTS_PER_PAGE == fields->m_currentPage);
             child->setVisible(isVisible);
 
             if (isVisible) {
@@ -146,32 +138,42 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
                 child->setPosition({-9999.f, -9999.f});
             }
             ++actualIndex;
+        };
+
+        for (CCNode* child : children) {
+            if (!isArrow(child)) {
+                updateNodeVisibility(child);
+            }
         }
 
-        if (hasMultiplePages && visibleIndex > 0) {
-            float lastItemY = startY - ((visibleIndex - 1) * ITEM_STEP_Y);
-            fields->m_prevArrow->setPosition({xPos, safeTop - 15.f});
-            fields->m_nextArrow->setPosition({xPos, lastItemY - 16.f});
-        }
+        auto updateArrowPositions = [&]() {
+            if (hasMultiplePages && visibleIndex > 0) {
+                const float lastItemY = startY - ((visibleIndex - 1) * ITEM_STEP_Y);
+                fields->m_prevArrow->setPosition({xPos, safeTop - 15.f});
+                fields->m_nextArrow->setPosition({xPos, lastItemY - 16.f});
+            }
+        };
+
+        updateArrowPositions();
     }
 
-    static void addStatItem(CCMenu* menu, const std::string& id, CCNode* icon, float iconScale, int number) {
+    static void addStatItem(CCMenu* menu, std::string_view id, CCNode* icon, float iconScale, int number) {
         auto* container = CCMenu::create();
-        container->setID(id + "-container");
-        container->setContentSize({0, 0});
+        container->setID(fmt::format("{}-container", id));
+        container->setContentSize({0.f, 0.f});
 
-        if (icon != nullptr) {
-            icon->setID(id + "-icon");
+        if (icon) {
+            icon->setID(fmt::format("{}-icon", id));
             icon->setScale(iconScale);
-            if (icon->getParent() != nullptr) {
+            if (icon->getParent()) {
                 icon->removeFromParentAndCleanup(false);
             }
-            icon->setPosition({0, 0});
+            icon->setPosition({0.f, 0.f});
             container->addChild(icon);
         }
 
         auto* label = geode::Label::create(fmt::to_string(number), "bigFont.fnt");
-        label->setID(id + "-label");
+        label->setID(fmt::format("{}-label", id));
         label->setScale(0.34f);
         label->setAnchorPoint({1.0f, 0.5f});
         label->setPosition({-12.0f, 0.5f});
@@ -185,7 +187,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
             return false;
         }
 
-        auto fields = m_fields.self();
+        auto* fields = m_fields.self();
 
         fields->m_statsMenu = CCMenu::create();
         fields->m_statsMenu->setID("stats-menu"_spr);
@@ -193,40 +195,21 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_statsMenu->setPosition({0.f, 0.f});
         this->addChild(fields->m_statsMenu);
 
-        struct DefaultStat {
-            std::string setting;
-            std::string id;
-            ZStringView spriteFrame;
-            ZStringView statNum;
-            float scale;
-        };
-
-        const std::array<DefaultStat, 7> defaults = {{
-            {"stars-stat", "stars", "GJ_starsIcon_001.png", "6", 0.54f},
-            {"moons-stat", "moons", "GJ_moonsIcon_001.png", "28", 0.54f},
-            {"gold-coins-stat", "coins", "GJ_coinsIcon_001.png", "8", 0.51f},
-            {"user-coins-stat", "user-coins", "GJ_coinsIcon2_001.png", "12", 0.51f},
-            {"orbs-stat", "orbs", "currencyOrbIcon_001.png", "14", 0.54f},
-            {"diamonds-stat", "diamonds", "GJ_diamondsIcon_001.png", "13", 0.6f},
-            {"diamond-shards-stat", "diamond-shards", "currencyDiamondIcon_001.png", "29", 0.54f},
-        }};
-
-        for (const auto& def : defaults) {
+        for (const auto& def : DEFAULT_STATS) {
             if (Mod::get()->getSettingValue<bool>(def.setting)) {
                 auto* sprite = CCSprite::createWithSpriteFrameName(def.spriteFrame.c_str());
-                int num = GameStatsManager::sharedState()->getStat(def.statNum.c_str());
+                const int num = GameStatsManager::sharedState()->getStat(def.statNum.c_str());
                 addStatItem(fields->m_statsMenu, def.id, sprite, def.scale, num);
             }
         }
 
-        auto managedStats = StatsManager::get()->getManagedStats();
-        for (auto const& [id, stat] : managedStats) {
+        for (const auto& [id, stat] : StatsManager::get()->getManagedStats()) {
             auto node = stat.displayNode.lock();
             addStatItem(fields->m_statsMenu, id, node, stat.nodeScale, stat.displayedNumber);
         }
 
         setupArrows();
-        schedule(schedule_selector(StatsGarageLayer::pageChildren));
+        this->schedule(schedule_selector(StatsGarageLayer::pageChildren));
 
         return true;
     }
