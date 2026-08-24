@@ -14,7 +14,6 @@ constexpr int ELEMENTS_PER_PAGE = 10;
 constexpr float TOP_MARGIN = 12.f;
 constexpr float RIGHT_MARGIN = 18.f;
 constexpr float ITEM_GAP = 3.f;
-constexpr float ARROW_GAP = 4.f;
 constexpr float ARROW_SCALE = 0.5f;
 
 struct DefaultStat {
@@ -44,7 +43,8 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
     struct Fields {
         CCNode* m_statsContainer = nullptr;
-        CCNode* m_arrowContainer = nullptr;
+        CCNode* m_prevArrowContainer = nullptr;
+        CCNode* m_nextArrowContainer = nullptr;
         Button* m_prevArrow = nullptr;
         Button* m_nextArrow = nullptr;
         std::vector<Ref<CCNode>> m_allStatNodes;
@@ -64,32 +64,33 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
         const bool hasMultiplePages = actual > ELEMENTS_PER_PAGE;
 
-        fields->m_statsContainer->removeAllChildrenWithCleanup(false);
-
         const int start = fields->m_currentPage * ELEMENTS_PER_PAGE;
         const int end = std::min(start + ELEMENTS_PER_PAGE, actual);
 
-        for (int i = start; i < end; ++i) {
-            fields->m_statsContainer->addChild(all[i]);
+        for (int i = 0; i < actual; ++i) {
+            all[i]->setVisible(i >= start && i < end);
         }
 
-        fields->m_statsContainer->updateLayout();
+        fields->m_prevArrowContainer->setVisible(hasMultiplePages);
+        fields->m_nextArrowContainer->setVisible(hasMultiplePages);
 
-        fields->m_arrowContainer->setVisible(hasMultiplePages);
         fields->m_prevArrow->setEnabled(hasMultiplePages && fields->m_currentPage > 0);
         fields->m_prevArrow->setOpacity(fields->m_currentPage > 0 ? 255 : 100);
         fields->m_nextArrow->setEnabled(hasMultiplePages && fields->m_currentPage < fields->m_maxPage);
         fields->m_nextArrow->setOpacity(fields->m_currentPage < fields->m_maxPage ? 255 : 100);
+
+        fields->m_statsContainer->updateLayout();
     }
 
     void setupArrows() {
         auto* fields = m_fields.self();
 
-        auto createArrowBtn = [this, fields](bool isNext) {
+        auto createArrow = [this, fields](bool isNext) {
             auto* spr = CCSprite::createWithSpriteFrameName("GJ_arrow_02_001.png");
             if (isNext) {
                 spr->setFlipX(true);
             }
+            spr->setRotation(90.f);
 
             auto* btn = Button::createWithNode(
                 spr,
@@ -100,36 +101,38 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
                     this->layoutPage();
                 }
             );
-
+            btn->setID(isNext ? "next-arrow"_spr : "prev-arrow"_spr);
             btn->setScale(ARROW_SCALE);
-            btn->setRotation(90.f);
-            return btn;
+
+            auto* container = CCNode::create();
+            container->setID(isNext ? "next-arrow-container"_spr : "prev-arrow-container"_spr);
+            container->setContentSize({80.f, 16.f});
+            container->setAnchorPoint({1.f, 0.5f});
+
+            container->setLayoutOptions(
+                AxisLayoutOptions::create()
+                    ->setAutoScale(false)
+            );
+
+            container->setLayout(
+                RowLayout::create()
+                    ->setAxisAlignment(AxisAlignment::End)
+                    ->setAutoScale(false)
+            );
+
+            container->addChild(btn);
+            container->updateLayout();
+
+            return std::make_pair(container, btn);
         };
 
-        fields->m_prevArrow = createArrowBtn(false);
-        fields->m_prevArrow->setID("prev-arrow"_spr);
+        auto [prevCont, prevBtn] = createArrow(false);
+        fields->m_prevArrowContainer = prevCont;
+        fields->m_prevArrow = prevBtn;
 
-        fields->m_nextArrow = createArrowBtn(true);
-        fields->m_nextArrow->setID("next-arrow"_spr);
-
-        fields->m_arrowContainer = CCNode::create();
-        fields->m_arrowContainer->setID("arrow-container"_spr);
-        fields->m_arrowContainer->setAnchorPoint({1.f, 1.f});
-        fields->m_arrowContainer->setContentSize({30.f, 40.f});
-
-        fields->m_arrowContainer->setLayout(
-            ColumnLayout::create()
-                ->setAxisReverse(true)
-                ->setGap(ARROW_GAP)
-                ->setAutoScale(false)
-        );
-        fields->m_arrowContainer->addChild(fields->m_prevArrow);
-        fields->m_arrowContainer->addChild(fields->m_nextArrow);
-        fields->m_arrowContainer->updateLayout();
-
-        const auto safeArea = geode::utils::getSafeAreaRect();
-        fields->m_arrowContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
-        this->addChild(fields->m_arrowContainer);
+        auto [nextCont, nextBtn] = createArrow(true);
+        fields->m_nextArrowContainer = nextCont;
+        fields->m_nextArrow = nextBtn;
     }
 
     static void addStatItem(std::vector<Ref<CCNode>>& target, std::string_view id, CCNode* icon, float scale, int number) {
@@ -194,8 +197,9 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_statsContainer = CCNode::create();
         fields->m_statsContainer->setID("stats-container"_spr);
         fields->m_statsContainer->setZOrder(2);
+        fields->m_statsContainer->ignoreAnchorPointForPosition(false);
         fields->m_statsContainer->setAnchorPoint({1.f, 1.f});
-        fields->m_statsContainer->setContentSize({100.f, safeArea.size.height - 40.f});
+        fields->m_statsContainer->setContentSize({80.f, safeArea.size.height - 40.f});
         fields->m_statsContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
 
         fields->m_statsContainer->setLayout(
@@ -210,6 +214,15 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         this->addChild(fields->m_statsContainer);
 
         setupArrows();
+
+        fields->m_statsContainer->addChild(fields->m_prevArrowContainer);
+
+        for (auto& node : fields->m_allStatNodes) {
+            fields->m_statsContainer->addChild(node);
+        }
+
+        fields->m_statsContainer->addChild(fields->m_nextArrowContainer);
+
         layoutPage();
 
         return true;
