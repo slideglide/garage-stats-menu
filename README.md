@@ -106,7 +106,7 @@ using namespace stats_api;
 $execute {
     registerStatItem(
         "fire-shards"_spr,
-        []() -> cocos2d::CCNode* {
+        []() {
             return cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png");
         },
         GameStatsManager::sharedState()->getStat("16"),
