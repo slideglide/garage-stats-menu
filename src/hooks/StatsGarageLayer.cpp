@@ -55,20 +55,31 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         ListenerHandle m_statListener;
     };
 
-    float getAdaptiveScale(const CCRect& safeArea) {
-        constexpr float TARGET_UNSCALED_HEIGHT = 215.f;
+        float getAdaptiveScale(const CCRect& safeArea) {
+        #ifdef GEODE_IS_MOBILE
+        constexpr float MIN_SCALE = 0.68f;
+        constexpr float MAX_SCALE = 0.85f;
+        #else
+        constexpr float MIN_SCALE = 0.50f;
+        constexpr float MAX_SCALE = 0.85f;
+        #endif
 
-        const float maxAllowedHeight = std::max(100.f, safeArea.size.height - 120.f);
-        const float heightScale = maxAllowedHeight / TARGET_UNSCALED_HEIGHT;
+        constexpr float MAX_CONTENT_HEIGHT = 215.f;
+        constexpr float VERTICAL_PADDING = 35.f;
+        
+        const float availableHeight = std::max(100.f, safeArea.size.height - VERTICAL_PADDING);
+        const float verticalFitScale = availableHeight / MAX_CONTENT_HEIGHT;
+
+        const float baseScale = std::min(1.0f, verticalFitScale) * MAX_SCALE;
 
         const float aspectRatio = safeArea.size.width / std::max(1.0f, safeArea.size.height);
-        float aspectScale = 1.0f;
-        if (aspectRatio < 1.5f) {
-            aspectScale = std::max(0.65f, aspectRatio / 1.5f);
+        float aspectFactor = 1.0f;
+        if (aspectRatio < 1.6f) {
+            aspectFactor = std::max(0.65f, aspectRatio / 1.6f);
         }
 
-        const float calculatedScale = std::min(heightScale, aspectScale) * 0.85f;
-        return std::clamp(calculatedScale, 0.55f, 0.85f);
+        const float calculatedScale = baseScale * aspectFactor;
+        return std::clamp(calculatedScale, MIN_SCALE, MAX_SCALE);
     }
 
     void layoutPage() {
