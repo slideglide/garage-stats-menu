@@ -21,6 +21,8 @@ Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStat
 using namespace stats_api;
 
 $execute {
+    // If you want a button, please do not pass a `CCMenuItem` to this function; your callback will not work.
+    // Use `registerStatItemButton` with a `geode::Button` if you want a button.
     registerStatItem(
         // A unique ID for your stat item.
         "your-stat-item-id"_spr,
@@ -48,8 +50,13 @@ $execute {
     );
 
     // Update the display node of your stat item.
+    // Use `updateDisplayButton` instead if your stat is a button.
     // The node scale parameter is optional! The default scale is 0.5f.
-    updateDisplayNode("your-stat-item-id"_spr, cocos2d::CCNode::create(), 0.5f);
+    updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
+
+    // Update the display button of your stat item.
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayButton("your-stat-item-id"_spr, [](){ return geode::Button::create([](auto) {}); }, 0.5f);
 
     // Unregister your stat item.
     unregisterStatItem("your-stat-item-id"_spr);

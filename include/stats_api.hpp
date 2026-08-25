@@ -23,12 +23,16 @@ inline void registerStatItem(geode::ZStringView itemID, NodeProvider provider, i
                              float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&registerStatItem, (itemID, std::move(provider), displayedNumber, nodeScale));
 
-inline void registerStatItemButton(geode::ZStringView itemID, ButtonProvider buttonProvider, int displayedNumber,
+inline void registerStatItemButton(geode::ZStringView itemID, ButtonProvider provider, int displayedNumber,
                                    float nodeScale = defaultNodeScale)
-    GEODE_EVENT_EXPORT_NORES(&registerStatItemButton, (itemID, std::move(buttonProvider), displayedNumber, nodeScale));
+    GEODE_EVENT_EXPORT_NORES(&registerStatItemButton, (itemID, std::move(provider), displayedNumber, nodeScale));
 
 inline void updateDisplayNode(geode::ZStringView itemID, NodeProvider provider, float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&updateDisplayNode, (itemID, std::move(provider), nodeScale));
+
+inline void updateDisplayButton(geode::ZStringView itemID, ButtonProvider provider,
+                                float nodeScale = defaultNodeScale)
+    GEODE_EVENT_EXPORT_NORES(&updateDisplayButton, (itemID, std::move(provider), nodeScale));
 
 inline void unregisterStatItem(geode::ZStringView itemID) GEODE_EVENT_EXPORT_NORES(&unregisterStatItem, (itemID));
 

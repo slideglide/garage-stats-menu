@@ -63,14 +63,20 @@ void registerStatItem(geode::ZStringView itemID, NodeProvider provider, int numb
     StatsManager::get()->registerStatItem(itemID, std::move(provider), number, scale);
 }
 
-void registerStatItemButton(geode::ZStringView itemID, ButtonProvider buttonProvider, int number, float scale) {
-    StatsManager::get()->registerStatItem(itemID, [bp = std::move(buttonProvider)]() mutable -> cocos2d::CCNode* {
+void registerStatItemButton(geode::ZStringView itemID, ButtonProvider provider, int number, float scale) {
+    StatsManager::get()->registerStatItem(itemID, [bp = std::move(provider)]() mutable -> cocos2d::CCNode* {
         return bp ? bp() : nullptr;
     }, number, scale);
 }
 
 void updateDisplayNode(geode::ZStringView itemID, NodeProvider provider, float scale) {
     StatsManager::get()->updateDisplayNode(itemID, std::move(provider), scale);
+}
+
+void updateDisplayButton(geode::ZStringView itemID, ButtonProvider provider, float scale) {
+    StatsManager::get()->updateDisplayNode(itemID, [bp = std::move(provider)]() mutable -> cocos2d::CCNode* {
+        return bp ? bp() : nullptr;
+    }, scale);
 }
 
 void unregisterStatItem(geode::ZStringView itemID) { StatsManager::get()->unregisterStatItem(itemID); }
