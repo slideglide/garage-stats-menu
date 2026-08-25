@@ -50,6 +50,7 @@ $execute {
     );
 
     // Update the display node of your stat item.
+    // Use `updateDisplayButton` instead if your stat is a button.
     // The node scale parameter is optional! The default scale is 0.5f.
     updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
 
