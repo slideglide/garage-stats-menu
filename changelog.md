@@ -1,3 +1,6 @@
+# v2.0.1
+- Potentially fix the stats icons being comically small on mobile 
+
 # v2.0.0
 - Rewrite of the entire API! (ABI breaking; if you, as a developer, have a mod that uses the legacy API, you should update it to use the new API)
 - Numbers are now abbreviated to prevent stats with large values from overlapping with other elements on the icon kit
