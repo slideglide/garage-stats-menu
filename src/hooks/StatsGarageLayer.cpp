@@ -1,12 +1,12 @@
+#include "../api/api.hpp"
+#include "../utils.hpp"
+
 #include <Geode/modify/GJGarageLayer.hpp>
 #include <Geode/ui/Button.hpp>
 #include <algorithm>
 #include <array>
 #include <string_view>
 #include <vector>
-
-#include "../api/api.hpp"
-#include "../utils.hpp"
 
 using namespace geode::prelude;
 
@@ -25,12 +25,12 @@ struct DefaultStat {
 };
 
 static const auto DEFAULT_STATS = std::to_array<DefaultStat>({
-    {         "stars-stat",          "stars",        "GJ_starsIcon_001.png",  "6", 0.54f},
-    {         "moons-stat",          "moons",        "GJ_moonsIcon_001.png", "28", 0.54f},
-    {    "gold-coins-stat",          "coins",        "GJ_coinsIcon_001.png",  "8", 0.51f},
-    {    "user-coins-stat",     "user-coins",       "GJ_coinsIcon2_001.png", "12", 0.51f},
-    {          "orbs-stat",           "orbs",     "currencyOrbIcon_001.png", "14", 0.54f},
-    {      "diamonds-stat",       "diamonds",     "GJ_diamondsIcon_001.png", "13",  0.6f},
+    {"stars-stat", "stars", "GJ_starsIcon_001.png", "6", 0.54f},
+    {"moons-stat", "moons", "GJ_moonsIcon_001.png", "28", 0.54f},
+    {"gold-coins-stat", "coins", "GJ_coinsIcon_001.png", "8", 0.51f},
+    {"user-coins-stat", "user-coins", "GJ_coinsIcon2_001.png", "12", 0.51f},
+    {"orbs-stat", "orbs", "currencyOrbIcon_001.png", "14", 0.54f},
+    {"diamonds-stat", "diamonds", "GJ_diamondsIcon_001.png", "13", 0.6f},
     {"diamond-shards-stat", "diamond-shards", "currencyDiamondIcon_001.png", "29", 0.54f},
 });
 
@@ -56,17 +56,17 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
     };
 
     float getAdaptiveScale(const CCRect& safeArea) {
-        #ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_MOBILE
         constexpr float MIN_SCALE = 0.68f;
         constexpr float MAX_SCALE = 0.85f;
-        #else
+#else
         constexpr float MIN_SCALE = 0.50f;
         constexpr float MAX_SCALE = 0.85f;
-        #endif
+#endif
 
         constexpr float MAX_CONTENT_HEIGHT = 215.f;
         constexpr float VERTICAL_PADDING = 35.f;
-        
+
         const float availableHeight = std::max(100.f, safeArea.size.height - VERTICAL_PADDING);
         const float verticalFitScale = availableHeight / MAX_CONTENT_HEIGHT;
 
@@ -105,7 +105,8 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
         fields->m_prevArrow->setEnabled(hasMultiplePages && fields->m_currentPage > 0);
         fields->m_prevArrow->setOpacity(fields->m_currentPage > 0 ? 255 : 100);
-        fields->m_nextArrow->setEnabled(hasMultiplePages && fields->m_currentPage < fields->m_maxPage);
+        fields->m_nextArrow->setEnabled(hasMultiplePages &&
+                                        fields->m_currentPage < fields->m_maxPage);
         fields->m_nextArrow->setOpacity(fields->m_currentPage < fields->m_maxPage ? 255 : 100);
 
         fields->m_statsContainer->updateLayout();
@@ -122,8 +123,9 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
             spr->setRotation(90.f);
 
             auto* btn = Button::createWithNode(spr, [this, fields, isNext](auto) {
-                fields->m_requestedPage = isNext ? std::min(fields->m_currentPage + 1, fields->m_maxPage)
-                                                 : std::max(fields->m_currentPage - 1, 0);
+                fields->m_requestedPage =
+                    isNext ? std::min(fields->m_currentPage + 1, fields->m_maxPage)
+                           : std::max(fields->m_currentPage - 1, 0);
                 this->layoutPage();
             });
             btn->setID(isNext ? "next-arrow"_spr : "prev-arrow"_spr);
@@ -136,7 +138,8 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
             container->setLayoutOptions(AxisLayoutOptions::create()->setAutoScale(false));
 
-            container->setLayout(RowLayout::create()->setAxisAlignment(AxisAlignment::End)->setAutoScale(false));
+            container->setLayout(
+                RowLayout::create()->setAxisAlignment(AxisAlignment::End)->setAutoScale(false));
 
             container->addChild(btn);
             container->updateLayout();
@@ -153,8 +156,11 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_nextArrow = nextBtn;
     }
 
-    static void
-    addStatItem(std::vector<Ref<CCNode>>& target, std::string_view id, CCNode* icon, float scale, int number) {
+    static void addStatItem(std::vector<Ref<CCNode>>& target,
+                            std::string_view id,
+                            CCNode* icon,
+                            float scale,
+                            int number) {
         if (!icon) {
             return;
         }
@@ -176,8 +182,10 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         container->setContentSize({80.f, 15.f});
         container->setAnchorPoint({1.f, 0.5f});
 
-        container->setLayout(
-            RowLayout::create()->setAxisAlignment(AxisAlignment::End)->setAutoScale(false)->setGap(4.f));
+        container->setLayout(RowLayout::create()
+                                 ->setAxisAlignment(AxisAlignment::End)
+                                 ->setAutoScale(false)
+                                 ->setGap(4.f));
 
         container->addChild(label);
         container->addChild(icon);
@@ -218,7 +226,8 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         StatsManager::get()->forEachStat([this, fields](std::string_view id, StatItem& stat) {
             if (stat.provider) {
                 if (auto* node = stat.provider()) {
-                    addStatItem(fields->m_allStatNodes, id, node, stat.nodeScale, stat.displayedNumber);
+                    addStatItem(
+                        fields->m_allStatNodes, id, node, stat.nodeScale, stat.displayedNumber);
                 }
             }
         });
@@ -248,7 +257,8 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         fields->m_statsContainer->ignoreAnchorPointForPosition(false);
         fields->m_statsContainer->setAnchorPoint({1.f, 1.f});
         fields->m_statsContainer->setContentSize({80.f, safeArea.size.height - 40.f});
-        fields->m_statsContainer->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
+        fields->m_statsContainer->setPosition(
+            {safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
         fields->m_statsContainer->setScale(adaptiveScale);
 
         fields->m_statsContainer->setLayout(ColumnLayout::create()
