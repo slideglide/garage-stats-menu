@@ -1,11 +1,16 @@
 #pragma once
 
-#include <stats_api.hpp>
-#include <Geode/cocos/base_nodes/CCNode.h>
 #include <Geode/Result.hpp>
+#include <Geode/cocos/base_nodes/CCNode.h>
 #include <Geode/utils/StringMap.hpp>
 #include <Geode/utils/ZStringView.hpp>
 #include <Geode/utils/cocos.hpp>
+#include <stats_api.hpp>
+
+class StatChangeEvent : public geode::GlobalEvent<StatChangeEvent, bool(), std::string_view> {
+public:
+    using GlobalEvent::GlobalEvent;
+};
 
 struct StatItem {
     mutable stats_api::NodeProvider provider;
