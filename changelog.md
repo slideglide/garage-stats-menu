@@ -1,3 +1,9 @@
+# v2.0.0
+- Rewrite of the entire API! (ABI breaking; if you, as a developer, have a mod that uses the legacy API, you should update it to use the new API)
+- Numbers are now abbreviated to prevent stats with large values from overlapping with other elements on the icon kit
+- Added adaptive scaling: the stats menu should now reliably scale itself depending on your screen resolution now!
+- Previous page and next page arrows now get disabled depending on the page
+
 # v1.3.3
 - Changed old GitHub links
 
