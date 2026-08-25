@@ -55,7 +55,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         ListenerHandle m_statListener;
     };
 
-        float getAdaptiveScale(const CCRect& safeArea) {
+    float getAdaptiveScale(const CCRect& safeArea) {
         #ifdef GEODE_IS_MOBILE
         constexpr float MIN_SCALE = 0.68f;
         constexpr float MAX_SCALE = 0.85f;
