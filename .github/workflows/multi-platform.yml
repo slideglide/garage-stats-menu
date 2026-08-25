@@ -43,8 +43,6 @@ jobs:
           bindings-ref: main
           combine: true
           target: ${{ matrix.config.target }}
-          export-symbols: true
-          export-pdb: true
 
   package:
     name: Package builds
