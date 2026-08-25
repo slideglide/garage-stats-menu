@@ -1,4 +1,121 @@
 # Stats Display API
-Allows mods to easily add custom stats into the icon kit
-## Developer usage
-See the [README](https://github.com/slideglide/garage-stats-menu/blob/main/README.md) for instructions on using this mod
+An API mod for **mod developers** to add their own stats to the icon kit menu.
+
+### NOTE: This mod is intended for developers only. If you're not a mod developer, you likely won't need this mod.
+
+## Setup
+Add the mod as a dependency in your mod's `mod.json`: 
+
+```
+"dependencies": {
+    "capeling.garage-stats-menu": ">=v2.0.0"
+}
+```
+
+## Usage
+Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
+
+```
+#include <capeling.garage-stats-menu/include/stats_api.hpp>
+
+using namespace stats_api;
+
+$execute {
+    // If you want a button, please do not pass a `CCMenuItem` to this function; your callback will not work.
+    // Use `registerStatItemButton` with a `geode::Button` if you want a button.
+    registerStatItem(
+        // A unique ID for your stat item.
+        "your-stat-item-id"_spr,
+        // Lambda returning any CCNode (e.g., CCSprite).
+        []() {
+            return cocos2d::CCNode::create();
+        },
+        // The displayed number for your stat item.
+        1,
+        // Optional: The node scale for your stat item. (Default: 0.5f).
+        1.f
+    );
+
+    registerStatItemButton(
+        // A unique ID for your stat item.
+        "your-stat-item-id"_spr,
+        // Lambda returning a geode::Button*.
+        []() {
+            return geode::Button::create([](auto) {});
+        },
+        // The displayed number for your stat item.
+        1,
+        // Optional: The node scale for your stat item. (Default: 0.5f).
+        1.f
+    );
+
+    // Update the display node of your stat item.
+    // Use `updateDisplayButton` instead if your stat is a button.
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
+
+    // Update the display button of your stat item.
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayButton("your-stat-item-id"_spr, [](){ return geode::Button::create([](auto) {}); }, 0.5f);
+
+    // Unregister your stat item.
+    unregisterStatItem("your-stat-item-id"_spr);
+
+    // Get the displayed number of your stat item.
+    getDisplayedNumber("your-stat-item-id"_spr).unwrapOrDefault();
+
+    // Set the displayed number of your stat item.
+    setDisplayedNumber("your-stat-item-id"_spr, 1);
+}
+```
+
+## Migrating from the legacy API
+Migrating is very easy; Change the header from `StatsDisplayAPI.h` to `stats_api.hpp` and simply stop hooking `GJGarageLayer::init` and instead use `registerStatItem` inside an `$execute` block.
+
+Here's an example code that uses the old API:
+
+```
+#include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
+
+class $modify(GJGarageLayer) {
+	bool init() {
+		if (!GJGarageLayer::init())
+			return false;
+
+		auto statMenu = this->getChildByID("capeling.garage-stats-menu/stats-menu");
+
+		auto myStatItem = StatsDisplayAPI::getNewItem("fire-shards"_spr, CCSprite::createWithSpriteFrameName("fireShardSmall_001.png"), GameStatsManager::sharedState()->getStat("16"), 0.8f);
+
+		if (statMenu) {
+			statMenu->addChild(myStatItem);
+			statMenu->updateLayout();
+		}
+
+		return true;
+	}
+};
+```
+
+And here's how it can be replaced with the new API:
+
+```
+#include <capeling.garage-stats-menu/include/stats_api.hpp>
+
+using namespace stats_api;
+
+$execute {
+    registerStatItem(
+        "fire-shards"_spr,
+        []() {
+            return cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png");
+        },
+        GameStatsManager::sharedState()->getStat("16"),
+        0.8f
+    );
+}
+```
+
+## Credits
+- [Capeling](https://github.com/capeling): Original creator of the mod.
+- [OmgRod](https://github.com/OmgRod): Previous maintainer of the mod.
+- [slideglide](https://github.com/slideglide): Current maintainer of the mod.

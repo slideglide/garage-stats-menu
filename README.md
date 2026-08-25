@@ -1,37 +1,82 @@
 # Stats Display API
-Allows mods to easily add custom stats into the icon kit
-# Developer usage
-## Setting up Stats Display API for mod usage
-Make sure to declare Stats Display API as a dependency in your 'mod.json'
+An API mod for **mod developers** to add their own stats to the icon kit menu.
+
+### NOTE: This mod is intended for developers only. If you're not a mod developer, you likely won't need this mod.
+
+## Setup
+Add the mod as a dependency in your mod's `mod.json`: 
+
 ```json
-"dependencies": [
-	{
-		"id": "capeling.garage-stats-menu",
-		"version": ">=v1.0.1",
-		"importance": "required"
-	}
-]
+"dependencies": {
+    "capeling.garage-stats-menu": ">=v2.0.0"
+}
 ```
 
-Then include the API in your source file
-
-`#include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>`
-
 ## Usage
-`StatsDisplayAPI::getNewItem` Has 4 things you need to pass through it
+Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
-- The ID of the item (always use _spr!)
-- The CCNode used for the icon
-- How much of the item you have
-- The scale of the icon
-
-This will return a `CCNode` which you should add to stats menu!
-
-## Example
-To add a displayed stat you simply need to create a item through the API and then add it to the menu
-
-This code adds your current fire shards to the display
 ```cpp
+#include <capeling.garage-stats-menu/include/stats_api.hpp>
+
+using namespace stats_api;
+
+$execute {
+    // If you want a button, please do not pass a `CCMenuItem` to this function; your callback will not work.
+    // Use `registerStatItemButton` with a `geode::Button` if you want a button.
+    registerStatItem(
+        // A unique ID for your stat item.
+        "your-stat-item-id"_spr,
+        // Lambda returning any CCNode (e.g., CCSprite).
+        []() {
+            return cocos2d::CCNode::create();
+        },
+        // The displayed number for your stat item.
+        1,
+        // Optional: The node scale for your stat item. (Default: 0.5f).
+        1.f
+    );
+
+    registerStatItemButton(
+        // A unique ID for your stat item.
+        "your-stat-item-id"_spr,
+        // Lambda returning a geode::Button*.
+        []() {
+            return geode::Button::create([](auto) {});
+        },
+        // The displayed number for your stat item.
+        1,
+        // Optional: The node scale for your stat item. (Default: 0.5f).
+        1.f
+    );
+
+    // Update the display node of your stat item.
+    // Use `updateDisplayButton` instead if your stat is a button.
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
+
+    // Update the display button of your stat item.
+    // The node scale parameter is optional! The default scale is 0.5f.
+    updateDisplayButton("your-stat-item-id"_spr, [](){ return geode::Button::create([](auto) {}); }, 0.5f);
+
+    // Unregister your stat item.
+    unregisterStatItem("your-stat-item-id"_spr);
+
+    // Get the displayed number of your stat item.
+    getDisplayedNumber("your-stat-item-id"_spr).unwrapOrDefault();
+
+    // Set the displayed number of your stat item.
+    setDisplayedNumber("your-stat-item-id"_spr, 1);
+}
+```
+
+## Migrating from the legacy API
+Migrating is very easy; Change the header from `StatsDisplayAPI.h` to `stats_api.hpp` and simply stop hooking `GJGarageLayer::init` and instead use `registerStatItem` inside an `$execute` block.
+
+Here's an example code that uses the old API:
+
+```cpp
+#include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
+
 class $modify(GJGarageLayer) {
 	bool init() {
 		if (!GJGarageLayer::init())
@@ -51,13 +96,26 @@ class $modify(GJGarageLayer) {
 };
 ```
 
-If in any case the stats menu does not exist, you should check to make sure that it is not nullptr before adding your item
+And here's how it can be replaced with the new API:
+
 ```cpp
-auto statMenu = this->getChildByID("capeling.garage-stats-menu/stats-menu");
-if (statMenu) {
-	statMenu->addChild(myStatItem);
-	statMenu->updateLayout();
+#include <capeling.garage-stats-menu/include/stats_api.hpp>
+
+using namespace stats_api;
+
+$execute {
+    registerStatItem(
+        "fire-shards"_spr,
+        []() {
+            return cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png");
+        },
+        GameStatsManager::sharedState()->getStat("16"),
+        0.8f
+    );
 }
 ```
 
-(Always remember to update the layout!)
+## Credits
+- [Capeling](https://github.com/capeling): Original creator of the mod.
+- [OmgRod](https://github.com/OmgRod): Previous maintainer of the mod.
+- [slideglide](https://github.com/slideglide): Current maintainer of the mod.
