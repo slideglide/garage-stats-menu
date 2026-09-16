@@ -49,6 +49,9 @@ $execute {
         1.f
     );
 
+    // Check if a stat item is registered.
+    isStatItemRegistered("your-stat-item-id"_spr);
+
     // Update the display node of your stat item.
     // Use `updateDisplayButton` instead if your stat is a button.
     // The node scale parameter is optional! The default scale is 0.5f.
@@ -96,7 +99,7 @@ class $modify(GJGarageLayer) {
 };
 ```
 
-And here's how it can be replaced with the new API:
+And here's how it can be migrated to the new API:
 
 ```cpp
 #include <capeling.garage-stats-menu/include/stats_api.hpp>

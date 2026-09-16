@@ -2,7 +2,6 @@
 
 #include <Geode/Result.hpp>
 #include <Geode/cocos/base_nodes/CCNode.h>
-#include <Geode/cocos/menu_nodes/CCMenuItem.h>
 #include <Geode/loader/Dispatch.hpp>
 #include <Geode/loader/Event.hpp>
 #include <Geode/loader/Loader.hpp>
@@ -17,10 +16,6 @@ namespace stats_api {
 using NodeProvider = geode::Function<cocos2d::CCNode*()>;
 using ButtonProvider = geode::Function<geode::Button*()>;
 
-inline bool isLoaded() {
-    return geode::Loader::get()->getLoadedMod(MY_MOD_ID) != nullptr;
-}
-
 inline void registerStatItem(geode::ZStringView itemID,
                              NodeProvider provider,
                              int displayedNumber,
@@ -32,6 +27,9 @@ inline void registerStatItemButton(geode::ZStringView itemID,
                                    int displayedNumber,
                                    float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&registerStatItemButton, (itemID, std::move(provider), displayedNumber, nodeScale));
+
+inline bool isStatItemRegistered(geode::ZStringView itemID)
+    GEODE_EVENT_EXPORT_NORES(&isStatItemRegistered, (itemID));
 
 inline void updateDisplayNode(geode::ZStringView itemID, NodeProvider provider, float nodeScale = defaultNodeScale)
     GEODE_EVENT_EXPORT_NORES(&updateDisplayNode, (itemID, std::move(provider), nodeScale));
