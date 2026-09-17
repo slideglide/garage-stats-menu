@@ -57,8 +57,8 @@ CCNode* StatsGarageLayer::createStatItemContainer(Label* label, CCNode* icon, st
     container->setContentSize({80.f, 15.f});
     container->setLayout(
         RowLayout::create()
-    ->setAxisAlignment(AxisAlignment::End)
-    ->setAutoScale(false)
+            ->setAxisAlignment(AxisAlignment::End)
+            ->setAutoScale(false)
             ->setGap(4.f)
     );
     container->addChild(label);
@@ -129,7 +129,7 @@ void StatsGarageLayer::setupNavigation() {
             sprite->setRotation(isNext ? -90.f : 90.f);
         }
 
-        btn->setID("arrow-button");
+        btn->setID("arrow-button"_spr);
         btn->setScale(ARROW_SCALE);
 
         auto container = CCNode::create();
