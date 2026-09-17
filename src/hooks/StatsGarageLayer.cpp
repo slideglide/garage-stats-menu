@@ -1,7 +1,6 @@
 #include "StatsGarageLayer.hpp"
 #include "../api/api.hpp"
 #include "../utils.hpp"
-
 #include <algorithm>
 
 using namespace geode::prelude;
@@ -13,9 +12,7 @@ void StatsGarageLayer::onModify(auto& self) {
 }
 
 bool StatsGarageLayer::init() {
-    if (!GJGarageLayer::init()) {
-        return false;
-    }
+    if (!GJGarageLayer::init()) return false;
 
     auto* fields = m_fields.self();
     const auto safeArea = geode::utils::getSafeAreaRect();
@@ -34,7 +31,7 @@ bool StatsGarageLayer::init() {
 }
 
 CCNode* StatsGarageLayer::createStatsContainer(const CCRect& safeArea) {
-    Ref container = CCNode::create();
+    auto container = CCNode::create();
     container->setID("stats-container"_spr);
     container->setZOrder(2);
     container->ignoreAnchorPointForPosition(false);
@@ -44,26 +41,25 @@ CCNode* StatsGarageLayer::createStatsContainer(const CCRect& safeArea) {
     container->setScale(getAdaptiveScale(safeArea));
     container->setLayout(
         ColumnLayout::create()
-        ->setAxisReverse(true)
-        ->setAxisAlignment(AxisAlignment::End)
-        ->setCrossAxisAlignment(AxisAlignment::End)
-        ->setCrossAxisOverflow(true)
-        ->setGap(ITEM_GAP)
-        ->setAutoScale(true)
+            ->setAxisReverse(true)
+            ->setAxisAlignment(AxisAlignment::End)
+            ->setCrossAxisAlignment(AxisAlignment::End)
+            ->setCrossAxisOverflow(true)
+            ->setGap(ITEM_GAP)
+            ->setAutoScale(false)
     );
     return container;
 }
 
-CCNode* StatsGarageLayer::createStatItemContainer(CCNode* label, CCNode* icon, std::string_view id) {
-    Ref container = CCNode::create();
+CCNode* StatsGarageLayer::createStatItemContainer(Label* label, CCNode* icon, std::string_view id) {
+    auto container = CCNode::create();
     container->setID(fmt::format("{}-container", id));
     container->setContentSize({80.f, 15.f});
-    container->setAnchorPoint({1.f, 0.5f});
     container->setLayout(
         RowLayout::create()
-        ->setAxisAlignment(AxisAlignment::End)
-        ->setAutoScale(false)
-        ->setGap(4.f)
+    ->setAxisAlignment(AxisAlignment::End)
+    ->setAutoScale(false)
+            ->setGap(4.f)
     );
     container->addChild(label);
     container->addChild(icon);
@@ -74,7 +70,7 @@ CCNode* StatsGarageLayer::createStatItemContainer(CCNode* label, CCNode* icon, s
 void StatsGarageLayer::addStatItem(
     std::vector<Ref<CCNode>>& target,
     std::string_view id,
-    CCNode* icon,
+    Ref<CCNode> icon,
     float scale,
     int number
 ) {
@@ -87,7 +83,7 @@ void StatsGarageLayer::addStatItem(
     icon->setID(fmt::format("{}-icon", id));
     icon->setScale(scale);
 
-    Ref label = Label::create(stats::utils::convertNumToAbbreviatedString(number), "bigFont.fnt");
+    auto label = Label::create(stats::utils::convertNumToAbbreviatedString(number), "bigFont.fnt");
     label->setID(fmt::format("{}-label", id));
     label->setScale(0.34f);
 
@@ -121,74 +117,56 @@ float StatsGarageLayer::getAdaptiveScale(const CCRect& safeArea) {
     return std::clamp(calculatedScale, MIN_SCALE, MAX_SCALE);
 }
 
-void StatsGarageLayer::setArrowState(Button* button, bool enabled) {
-    if (!button) return;
-    button->setEnabled(enabled);
-    button->setOpacity(enabled ? 255 : 100);
-}
-
 void StatsGarageLayer::setupNavigation() {
     auto* fields = m_fields.self();
 
-    auto createArrowContainer = [this, fields](bool isNext) -> std::pair<Ref<CCNode>, Ref<Button>> {
-        Ref btn = Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [this, fields, isNext](auto) {
-            fields->m_requestedPage = std::clamp(
-                fields->m_currentPage + (isNext ? 1 : -1),
-                                                 0,
-                                                 fields->m_maxPage
-            );
-            this->applyPagination();
+    auto createArrowContainer = [this](bool isNext) -> Ref<CCNode> {
+        auto btn = Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [this, isNext](auto) {
+            this->goToPage(m_fields->m_currentPage + (isNext ? 1 : -1));
         });
 
         if (auto* sprite = static_cast<CCSprite*>(btn->getDisplayNode())) {
-            sprite->setFlipX(isNext);
-            sprite->setRotation(90.f);
+            sprite->setRotation(isNext ? -90.f : 90.f);
         }
 
-        btn->setID(isNext ? "next-arrow"_spr : "prev-arrow"_spr);
+        btn->setID("arrow-button");
         btn->setScale(ARROW_SCALE);
 
-        Ref container = CCNode::create();
+        auto container = CCNode::create();
         container->setID(isNext ? "next-arrow-container"_spr : "prev-arrow-container"_spr);
         container->setContentSize({80.f, 16.f});
-        container->setAnchorPoint({1.f, 0.5f});
-        container->setLayoutOptions(AxisLayoutOptions::create()->setAutoScale(false));
         container->setLayout(
             RowLayout::create()
-            ->setAxisAlignment(AxisAlignment::End)
-            ->setAutoScale(false)
+                ->setAxisAlignment(AxisAlignment::End)
+                ->setAutoScale(false)
         );
         container->addChild(btn);
         container->updateLayout();
 
-        return {container, btn};
+        return container;
     };
 
-    std::tie(fields->m_prevArrowContainer, fields->m_prevArrow) = createArrowContainer(false);
-    std::tie(fields->m_nextArrowContainer, fields->m_nextArrow) = createArrowContainer(true);
+    fields->m_prevArrow = createArrowContainer(false);
+    fields->m_nextArrow = createArrowContainer(true);
+}
+
+int StatsGarageLayer::getMaxPage() {
+    auto fields = m_fields.self();
+    const size_t total = fields->m_statNodes.size();
+    return total == 0 ? 0 : static_cast<int>((total - 1) / ELEMENTS_PER_PAGE);
+}
+
+void StatsGarageLayer::goToPage(int page) {
+    auto* fields = m_fields.self();
+    fields->m_currentPage = std::clamp(page, 0, getMaxPage());
+    renderCurrentPage();
 }
 
 void StatsGarageLayer::rebuildStats() {
     auto* fields = m_fields.self();
     if (!fields->m_statsContainer) return;
 
-    if (fields->m_isRebuilding) return;
-    fields->m_isRebuilding = true;
-
-    const int preservedPage = fields->m_currentPage;
-
-    for (auto& container : fields->m_statNodes) {
-        if (container) {
-            for (auto* child : container->getChildrenExt()) {
-                if (child->getID().view().ends_with("-icon")) {
-                    child->removeFromParentAndCleanup(false);
-                }
-            }
-        }
-    }
-
     fields->m_statNodes.clear();
-    fields->m_statsContainer->removeAllChildren();
 
     for (const auto& def : DEFAULT_STATS) {
         if (Mod::get()->getSettingValue<bool>(def.setting)) {
@@ -206,44 +184,43 @@ void StatsGarageLayer::rebuildStats() {
         }
     });
 
-    fields->m_statsContainer->addChild(fields->m_prevArrowContainer);
-    for (auto& node : fields->m_statNodes) {
-        fields->m_statsContainer->addChild(node);
-    }
-    fields->m_statsContainer->addChild(fields->m_nextArrowContainer);
-
-    fields->m_requestedPage = preservedPage;
-    applyPagination();
-
-    fields->m_isRebuilding = false;
+    goToPage(fields->m_currentPage);
 }
 
-void StatsGarageLayer::applyPagination() {
+void StatsGarageLayer::renderCurrentPage() {
     auto* fields = m_fields.self();
     if (!fields->m_statsContainer) return;
 
-    const auto& nodes = fields->m_statNodes;
-    const int total = static_cast<int>(nodes.size());
+    fields->m_statsContainer->removeAllChildren();
 
-    fields->m_maxPage = total <= 0 ? 0 : (total - 1) / ELEMENTS_PER_PAGE;
-    fields->m_currentPage = std::clamp(fields->m_requestedPage, 0, fields->m_maxPage);
-    fields->m_requestedPage = fields->m_currentPage;
+    const int total = static_cast<int>(fields->m_statNodes.size());
+    const int maxPage = getMaxPage();
+    const bool needsPagination = total > ELEMENTS_PER_PAGE;
 
-    const bool hasPages = total > ELEMENTS_PER_PAGE;
-    const std::size_t start = static_cast<std::size_t>(fields->m_currentPage) * ELEMENTS_PER_PAGE;
-    const std::size_t end = std::min(start + static_cast<std::size_t>(ELEMENTS_PER_PAGE), nodes.size());
-
-    for (std::size_t i = 0; i < nodes.size(); ++i) {
-        if (auto& node = nodes[i]) {
-            node->setVisible(i >= start && i < end);
+    auto updateArrowState = [](CCNode* container, bool enabled) {
+        if (!container) return;
+        if (auto* btn = typeinfo_cast<Button*>(container->getChildByID("arrow-button"))) {
+            btn->setEnabled(enabled);
+            btn->setOpacity(enabled ? 255 : 100);
         }
+    };
+
+    if (needsPagination) {
+        updateArrowState(fields->m_prevArrow, fields->m_currentPage > 0);
+        fields->m_statsContainer->addChild(fields->m_prevArrow);
     }
 
-    fields->m_prevArrowContainer->setVisible(hasPages);
-    fields->m_nextArrowContainer->setVisible(hasPages);
+    const size_t start = static_cast<size_t>(fields->m_currentPage) * ELEMENTS_PER_PAGE;
+    const size_t end = std::min(start + ELEMENTS_PER_PAGE, fields->m_statNodes.size());
 
-    setArrowState(fields->m_prevArrow, hasPages && fields->m_currentPage > 0);
-    setArrowState(fields->m_nextArrow, hasPages && fields->m_currentPage < fields->m_maxPage);
+    for (size_t i = start; i < end; ++i) {
+        fields->m_statsContainer->addChild(fields->m_statNodes[i]);
+    }
+
+    if (needsPagination) {
+        updateArrowState(fields->m_nextArrow, fields->m_currentPage < maxPage);
+        fields->m_statsContainer->addChild(fields->m_nextArrow);
+    }
 
     fields->m_statsContainer->updateLayout();
 }

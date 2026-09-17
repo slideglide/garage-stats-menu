@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Geode/modify/GJGarageLayer.hpp>
+#include <Geode/ui/Label.hpp>
 #include <Geode/ui/Button.hpp>
 #include <array>
 #include <string_view>
@@ -33,19 +34,11 @@ inline const auto DEFAULT_STATS = std::to_array<StatDef>({
 class $modify(StatsGarageLayer, GJGarageLayer) {
     struct Fields {
         geode::Ref<cocos2d::CCNode> m_statsContainer = nullptr;
-        geode::Ref<cocos2d::CCNode> m_prevArrowContainer = nullptr;
-        geode::Ref<cocos2d::CCNode> m_nextArrowContainer = nullptr;
-        geode::Ref<geode::Button> m_prevArrow = nullptr;
-        geode::Ref<geode::Button> m_nextArrow = nullptr;
-
+        geode::Ref<cocos2d::CCNode> m_prevArrow = nullptr;
+        geode::Ref<cocos2d::CCNode> m_nextArrow = nullptr;
         std::vector<geode::Ref<cocos2d::CCNode>> m_statNodes;
-        int m_currentPage = 0;
-        int m_requestedPage = 0;
-        int m_maxPage = 0;
-
-        bool m_isRebuilding = false; 
-
         geode::ListenerHandle m_statListener;
+        int m_currentPage = 0;
 
         ~Fields() {
             m_statListener.destroy();
@@ -57,13 +50,16 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
 private:
     static cocos2d::CCNode* createStatsContainer(const cocos2d::CCRect& safeArea);
-    static cocos2d::CCNode* createStatItemContainer(cocos2d::CCNode* label, cocos2d::CCNode* icon, std::string_view id);
-    void addStatItem(std::vector<geode::Ref<cocos2d::CCNode>>& target, std::string_view id, cocos2d::CCNode* icon, float scale, int number);
+    static cocos2d::CCNode* createStatItemContainer(geode::Label* label, cocos2d::CCNode* icon, std::string_view id);
+    void addStatItem(std::vector<geode::Ref<cocos2d::CCNode>>& target, std::string_view id, geode::Ref<cocos2d::CCNode> icon, float scale, int number);
 
     static float getAdaptiveScale(const cocos2d::CCRect& safeArea);
     static void setArrowState(geode::Button* button, bool enabled);
 
     void setupNavigation();
+    int getMaxPage();
+    void goToPage(int page);
     void rebuildStats();
     void applyPagination();
+    void renderCurrentPage();
 };
