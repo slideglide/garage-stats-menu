@@ -39,6 +39,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         std::vector<geode::Ref<cocos2d::CCNode>> m_statNodes;
         geode::ListenerHandle m_statListener;
         int m_currentPage = 0;
+        bool m_isRebuilding = false;
 
         ~Fields() {
             m_statListener.destroy();

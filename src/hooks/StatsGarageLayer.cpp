@@ -166,6 +166,9 @@ void StatsGarageLayer::rebuildStats() {
     auto* fields = m_fields.self();
     if (!fields->m_statsContainer) return;
 
+    if (fields->m_isRebuilding) return;
+    fields->m_isRebuilding = true;
+
     fields->m_statNodes.clear();
 
     for (const auto& def : DEFAULT_STATS) {
@@ -185,6 +188,7 @@ void StatsGarageLayer::rebuildStats() {
     });
 
     goToPage(fields->m_currentPage);
+    fields->m_isRebuilding = false;
 }
 
 void StatsGarageLayer::renderCurrentPage() {
@@ -199,8 +203,9 @@ void StatsGarageLayer::renderCurrentPage() {
 
     auto updateArrowState = [](CCNode* container, bool enabled) {
         if (!container) return;
-        if (auto* btn = typeinfo_cast<Button*>(container->getChildByID("arrow-button"))) {
-            btn->setEnabled(enabled);
+
+        if (auto* btn = container->getChildByType<Button>()) {
+            btn->setEnabled(true);
             btn->setOpacity(enabled ? 255 : 100);
         }
     };
