@@ -91,13 +91,13 @@ void StatsGarageLayer::addStatItem(
 }
 
 float StatsGarageLayer::getAdaptiveScale(const CCRect& safeArea) {
-    #ifdef GEODE_IS_MOBILE
+#ifdef GEODE_IS_MOBILE
     constexpr float MIN_SCALE = 0.68f;
     constexpr float MAX_SCALE = 0.85f;
-    #else
+#else
     constexpr float MIN_SCALE = 0.50f;
     constexpr float MAX_SCALE = 0.85f;
-    #endif
+#endif
 
     constexpr float MAX_CONTENT_HEIGHT = 215.f;
     constexpr float VERTICAL_PADDING = 35.f;
@@ -195,7 +195,7 @@ void StatsGarageLayer::renderCurrentPage() {
     auto* fields = m_fields.self();
     if (!fields->m_statsContainer) return;
 
-    fields->m_statsContainer->removeAllChildren();
+    fields->m_statsContainer->removeAllChildrenWithCleanup(false);
 
     const int total = static_cast<int>(fields->m_statNodes.size());
     const int maxPage = getMaxPage();
@@ -205,7 +205,7 @@ void StatsGarageLayer::renderCurrentPage() {
         if (!container) return;
 
         if (auto* btn = container->getChildByType<Button>()) {
-            btn->setEnabled(true);
+            btn->setEnabled(enabled);
             btn->setOpacity(enabled ? 255 : 100);
         }
     };
