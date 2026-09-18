@@ -71,19 +71,19 @@ void StatsManager::setDisplayedNumber(ZStringView itemID, int number) {
 }
 
 void StatsManager::forEachStat(StatCallback callback) {
-    std::vector<std::pair<std::string_view, StatItem*>> sortedStats;
-    sortedStats.reserve(m_stats.size());
+    std::vector<std::string_view> keys;
+    keys.reserve(m_stats.size());
 
-    for (auto& [key, value] : m_stats) {
-        sortedStats.emplace_back(key, &value);
+    for (const auto& [key, _] : m_stats) {
+        keys.push_back(key);
     }
 
-    std::sort(sortedStats.begin(), sortedStats.end(), [](auto const& a, auto const& b) {
-        return a.first < b.first;
-    });
+    std::sort(keys.begin(), keys.end());
 
-    for (auto [key, itemPtr] : sortedStats) {
-        callback(key, *itemPtr);
+    for (const auto& key : keys) {
+        if (auto it = m_stats.find(key); it != m_stats.end()) {
+            callback(key, it->second);
+        }
     }
 }
 
