@@ -81,21 +81,25 @@ Here's an example code that uses the old API:
 #include <capeling.garage-stats-menu/include/StatsDisplayAPI.h>
 
 class $modify(GJGarageLayer) {
-	bool init() {
-		if (!GJGarageLayer::init())
-			return false;
+    bool init() {
+        if (!GJGarageLayer::init()) return false;
 
-		auto statMenu = this->getChildByID("capeling.garage-stats-menu/stats-menu");
+        auto statMenu = this->getChildByID("capeling.garage-stats-menu/stats-menu");
 
-		auto myStatItem = StatsDisplayAPI::getNewItem("fire-shards"_spr, CCSprite::createWithSpriteFrameName("fireShardSmall_001.png"), GameStatsManager::sharedState()->getStat("16"), 0.8f);
+        auto myStatItem = StatsDisplayAPI::getNewItem(
+            "fire-shards"_spr,
+            cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png"),
+            GameStatsManager::sharedState()->getStat(16),
+            0.8f
+        );
 
-		if (statMenu) {
-			statMenu->addChild(myStatItem);
-			statMenu->updateLayout();
-		}
+        if (statMenu) {
+            statMenu->addChild(myStatItem);
+            statMenu->updateLayout();
+        }
 
-		return true;
-	}
+        return true;
+    }
 };
 ```
 
