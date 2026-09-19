@@ -88,7 +88,7 @@ class $modify(GJGarageLayer) {
 
         auto myStatItem = StatsDisplayAPI::getNewItem(
             "fire-shards"_spr,
-            cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.ong"),
+            cocos2d::CCSprite::createWithSpriteFrameName("fireShardSmall_001.png"),
             GameStatsManager::sharedState()->getStat("16"),
             0.8f
         );
