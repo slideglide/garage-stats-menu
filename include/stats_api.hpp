@@ -55,4 +55,4 @@ inline geode::Result<int> getDisplayedNumber(geode::ZStringView itemID)
 inline void setDisplayedNumber(geode::ZStringView itemID, int displayedNumber)
     GEODE_EVENT_EXPORT_NORES(&setDisplayedNumber, (itemID, displayedNumber));
 
-} // namespace stats_api// namespace stats_api
+} // namespace stats_api
