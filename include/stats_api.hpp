@@ -1,4 +1,4 @@
- #pragma once
+#pragma once
 
 #include <Geode/Result.hpp>
 #include <Geode/cocos/base_nodes/CCNode.h>
