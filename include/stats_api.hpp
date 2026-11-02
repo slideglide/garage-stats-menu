@@ -17,42 +17,52 @@ namespace stats_api {
 using NodeProvider = geode::Function<cocos2d::CCNode*()>;
 using ButtonProvider = geode::Function<geode::Button*()>;
 
-inline void registerStatItem(
-    geode::ZStringView itemID,
-    NodeProvider provider,
-    int displayedNumber,
-    float nodeScale = defaultNodeScale
-) GEODE_EVENT_EXPORT_NORES(&registerStatItem, (itemID, std::move(provider), displayedNumber, nodeScale));
+GEODE_EVENT_EXPORT(
+    void, registerStatItem,
+    (geode::ZStringView itemID, NodeProvider provider, int displayedNumber, float nodeScale = defaultNodeScale),
+    (itemID, std::move(provider), displayedNumber, nodeScale)
+);
 
-inline void registerStatItemButton(
-    geode::ZStringView itemID,
-    ButtonProvider provider,
-    int displayedNumber,
-    float nodeScale = defaultNodeScale
-) GEODE_EVENT_EXPORT_NORES(&registerStatItemButton, (itemID, std::move(provider), displayedNumber, nodeScale));
+GEODE_EVENT_EXPORT(
+    void, registerStatItemButton,
+    (geode::ZStringView itemID, ButtonProvider provider, int displayedNumber, float nodeScale = defaultNodeScale),
+    (itemID, std::move(provider), displayedNumber, nodeScale)
+);
 
-inline bool isStatItemRegistered(geode::ZStringView itemID)
-    GEODE_EVENT_EXPORT_NORES(&isStatItemRegistered, (itemID));
+GEODE_EVENT_EXPORT(
+    bool, isStatItemRegistered,
+    (geode::ZStringView itemID),
+    (itemID)
+);
 
-inline void updateDisplayNode(
-    geode::ZStringView itemID,
-    NodeProvider provider,
-    float nodeScale = defaultNodeScale
-) GEODE_EVENT_EXPORT_NORES(&updateDisplayNode, (itemID, std::move(provider), nodeScale));
+GEODE_EVENT_EXPORT(
+    void, updateDisplayNode,
+    (geode::ZStringView itemID, NodeProvider provider, float nodeScale = defaultNodeScale),
+    (itemID, std::move(provider), nodeScale)
+);
 
-inline void updateDisplayButton(
-    geode::ZStringView itemID,
-    ButtonProvider provider,
-    float nodeScale = defaultNodeScale
-) GEODE_EVENT_EXPORT_NORES(&updateDisplayButton, (itemID, std::move(provider), nodeScale));
+GEODE_EVENT_EXPORT(
+    void, updateDisplayButton,
+    (geode::ZStringView itemID, ButtonProvider provider, float nodeScale = defaultNodeScale),
+    (itemID, std::move(provider), nodeScale)
+);
 
-inline void unregisterStatItem(geode::ZStringView itemID)
-    GEODE_EVENT_EXPORT_NORES(&unregisterStatItem, (itemID));
+GEODE_EVENT_EXPORT(
+    void, unregisterStatItem,
+    (geode::ZStringView itemID),
+    (itemID)
+);
 
-inline geode::Result<int> getDisplayedNumber(geode::ZStringView itemID)
-    GEODE_EVENT_EXPORT(&getDisplayedNumber, (itemID));
+GEODE_EVENT_EXPORT(
+    geode::Result<int>, getDisplayedNumber,
+    (geode::ZStringView itemID),
+    (itemID)
+);
 
-inline void setDisplayedNumber(geode::ZStringView itemID, int displayedNumber)
-    GEODE_EVENT_EXPORT_NORES(&setDisplayedNumber, (itemID, displayedNumber));
+GEODE_EVENT_EXPORT(
+    void, setDisplayedNumber,
+    (geode::ZStringView itemID, int displayedNumber),
+    (itemID, displayedNumber)
+);
 
 } // namespace stats_api
