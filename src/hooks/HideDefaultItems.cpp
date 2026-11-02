@@ -14,7 +14,7 @@ class $modify(HideDefaultItemsLayer, GJGarageLayer) {
              "user-coins-label", "orbs-label", "diamonds-label", "diamond-shards-label"}
         );
 
-        for (const auto& id : garageIDs) {
+        for (auto const& id : garageIDs) {
             if (auto child = getChildByID(id)) {
                 child->setVisible(false);
             }

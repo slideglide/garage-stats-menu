@@ -11,9 +11,6 @@
 
 #include <Geode/utils/general.hpp>
 
-// TODO: remove this whenever geode's numToAbbreviatedString util gets updated
-// this was pr'd to geode but as of v5.9.0, it hasn't been released, so i'm adding it to my own code
-// https://github.com/geode-sdk/geode/pull/2160/
 namespace stats::utils {
 template <std::integral Num> requires(!std::same_as<std::remove_cv_t<Num>, bool>)
 std::string convertNumToAbbreviatedString(Num num) {
@@ -27,6 +24,8 @@ std::string convertNumToAbbreviatedString(Num num) {
         } else {
             abs = static_cast<uint64_t>(num);
         }
+    } else {
+        abs = static_cast<uint64_t>(num);
     }
 
     struct Scale {

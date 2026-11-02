@@ -1,6 +1,7 @@
 #define GEODE_DEFINE_EVENT_EXPORTS
 #include "api.hpp"
 #include <algorithm>
+#include <utility>
 #include <stats_api.hpp>
 
 using namespace geode::prelude;
@@ -71,18 +72,28 @@ void StatsManager::setDisplayedNumber(ZStringView itemID, int number) {
 }
 
 void StatsManager::forEachStat(StatCallback callback) {
-    std::vector<std::string_view> keys;
+    std::vector<std::string> keys;
     keys.reserve(m_stats.size());
 
-    for (const auto& [key, _] : m_stats) {
+    for (auto const& [key, _] : m_stats) {
         keys.push_back(key);
     }
 
     std::sort(keys.begin(), keys.end());
 
-    for (const auto& key : keys) {
-        if (auto it = m_stats.find(key); it != m_stats.end()) {
-            callback(key, it->second);
+    for (auto const& key : keys) {
+        auto it = m_stats.find(key);
+        if (it == m_stats.end()) continue;
+
+        StatItem item{
+            .provider = std::exchange(it->second.provider, nullptr),
+            .displayedNumber = it->second.displayedNumber,
+            .nodeScale = it->second.nodeScale
+        };
+        callback(key, item);
+
+        if (it = m_stats.find(key); it != m_stats.end() && !it->second.provider) {
+            it->second.provider = std::move(item.provider);
         }
     }
 }
@@ -103,13 +114,7 @@ void registerStatItemButton(
     int number, 
     float scale
 ) {
-    StatsManager::get()->registerStatItem(
-        itemID,
-        [bp = std::move(provider)]
-        () mutable -> cocos2d::CCNode* 
-        { return bp ? bp() : nullptr; }, 
-        number,
-        scale);
+    StatsManager::get()->registerStatItem(itemID, NodeProvider(std::move(provider)), number, scale);
 }
 
 bool isStatItemRegistered(geode::ZStringView itemID) {
@@ -121,8 +126,7 @@ void updateDisplayNode(ZStringView itemID, NodeProvider provider, float scale) {
 }
 
 void updateDisplayButton(ZStringView itemID, ButtonProvider provider, float scale) {
-    StatsManager::get()->updateDisplayNode(
-        itemID, [bp = std::move(provider)]() mutable -> cocos2d::CCNode* { return bp ? bp() : nullptr; }, scale);
+    StatsManager::get()->updateDisplayNode(itemID, NodeProvider(std::move(provider)), scale);
 }
 
 void unregisterStatItem(ZStringView itemID) { 

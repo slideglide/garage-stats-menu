@@ -15,9 +15,10 @@ bool StatsGarageLayer::init() {
     if (!GJGarageLayer::init()) return false;
 
     auto* fields = m_fields.self();
-    const auto safeArea = geode::utils::getSafeAreaRect();
+    auto const safeArea = geode::utils::getSafeAreaRect();
 
-    fields->m_statsContainer = createStatsContainer(safeArea);
+    fields->m_availableHeight = (safeArea.size.height - VERTICAL_PADDING) / STATS_SCALE;
+    fields->m_statsContainer = createStatsContainer(safeArea, fields->m_availableHeight);
     this->addChild(fields->m_statsContainer);
 
     setupNavigation();
@@ -30,15 +31,15 @@ bool StatsGarageLayer::init() {
     return true;
 }
 
-CCNode* StatsGarageLayer::createStatsContainer(const CCRect& safeArea) {
+CCNode* StatsGarageLayer::createStatsContainer(CCRect const& safeArea, float availableHeight) {
     auto container = CCNode::create();
     container->setID("stats-container"_spr);
     container->setZOrder(2);
     container->ignoreAnchorPointForPosition(false);
     container->setAnchorPoint({1.f, 1.f});
-    container->setContentSize({80.f, safeArea.size.height - 40.f});
+    container->setContentSize({COLUMN_WIDTH, availableHeight});
     container->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
-    container->setScale(getAdaptiveScale(safeArea));
+    container->setScale(STATS_SCALE);
     container->setLayout(
         ColumnLayout::create()
             ->setAxisReverse(true)
@@ -54,7 +55,7 @@ CCNode* StatsGarageLayer::createStatsContainer(const CCRect& safeArea) {
 CCNode* StatsGarageLayer::createStatItemContainer(Label* label, CCNode* icon, std::string_view id) {
     auto container = CCNode::create();
     container->setID(fmt::format("{}-container", id));
-    container->setContentSize({80.f, 15.f});
+    container->setContentSize({COLUMN_WIDTH, ITEM_HEIGHT});
     container->setLayout(
         RowLayout::create()
             ->setAxisAlignment(AxisAlignment::End)
@@ -90,31 +91,16 @@ void StatsGarageLayer::addStatItem(
     target.push_back(createStatItemContainer(label, icon, id));
 }
 
-float StatsGarageLayer::getAdaptiveScale(const CCRect& safeArea) {
-#ifdef GEODE_IS_MOBILE
-    constexpr float MIN_SCALE = 0.68f;
-    constexpr float MAX_SCALE = 0.85f;
-#else
-    constexpr float MIN_SCALE = 0.50f;
-    constexpr float MAX_SCALE = 0.85f;
-#endif
+int StatsGarageLayer::getElementsPerPage() {
+    auto* fields = m_fields.self();
+    float const height = fields->m_availableHeight;
+    int const total = static_cast<int>(fields->m_statNodes.size());
 
-    constexpr float MAX_CONTENT_HEIGHT = 215.f;
-    constexpr float VERTICAL_PADDING = 35.f;
+    int const fitWithoutArrows = static_cast<int>((height + ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+    if (total <= std::min(fitWithoutArrows, ELEMENTS_PER_PAGE)) return ELEMENTS_PER_PAGE;
 
-    const float availableHeight = std::max(100.f, safeArea.size.height - VERTICAL_PADDING);
-    const float verticalFitScale = availableHeight / MAX_CONTENT_HEIGHT;
-
-    const float baseScale = std::min(1.0f, verticalFitScale) * MAX_SCALE;
-
-    const float aspectRatio = safeArea.size.width / std::max(1.0f, safeArea.size.height);
-    float aspectFactor = 1.0f;
-    if (aspectRatio < 1.6f) {
-        aspectFactor = std::max(0.65f, aspectRatio / 1.6f);
-    }
-
-    const float calculatedScale = baseScale * aspectFactor;
-    return std::clamp(calculatedScale, MIN_SCALE, MAX_SCALE);
+    int const fitWithArrows = static_cast<int>((height - 2 * ARROW_HEIGHT - ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+    return std::clamp(fitWithArrows, 1, ELEMENTS_PER_PAGE);
 }
 
 void StatsGarageLayer::setupNavigation() {
@@ -125,7 +111,7 @@ void StatsGarageLayer::setupNavigation() {
             this->goToPage(m_fields->m_currentPage + (isNext ? 1 : -1));
         });
 
-        if (auto* sprite = static_cast<CCSprite*>(btn->getDisplayNode())) {
+        if (auto* sprite = typeinfo_cast<CCSprite*>(btn->getDisplayNode())) {
             sprite->setRotation(isNext ? -90.f : 90.f);
         }
 
@@ -134,7 +120,7 @@ void StatsGarageLayer::setupNavigation() {
 
         auto container = CCNode::create();
         container->setID(isNext ? "next-arrow-container"_spr : "prev-arrow-container"_spr);
-        container->setContentSize({80.f, 16.f});
+        container->setContentSize({COLUMN_WIDTH, ARROW_HEIGHT});
         container->setLayout(
             RowLayout::create()
                 ->setAxisAlignment(AxisAlignment::End)
@@ -152,8 +138,8 @@ void StatsGarageLayer::setupNavigation() {
 
 int StatsGarageLayer::getMaxPage() {
     auto fields = m_fields.self();
-    const size_t total = fields->m_statNodes.size();
-    return total == 0 ? 0 : static_cast<int>((total - 1) / ELEMENTS_PER_PAGE);
+    size_t const total = fields->m_statNodes.size();
+    return total == 0 ? 0 : static_cast<int>((total - 1) / getElementsPerPage());
 }
 
 void StatsGarageLayer::goToPage(int page) {
@@ -171,10 +157,10 @@ void StatsGarageLayer::rebuildStats() {
 
     fields->m_statNodes.clear();
 
-    for (const auto& def : DEFAULT_STATS) {
+    for (auto const& def : DEFAULT_STATS) {
         if (Mod::get()->getSettingValue<bool>(def.setting)) {
             auto* sprite = CCSprite::createWithSpriteFrameName(def.spriteFrame.c_str());
-            const int num = GameStatsManager::sharedState()->getStat(def.statNum.c_str());
+            int const num = GameStatsManager::sharedState()->getStat(def.statNum.c_str());
             addStatItem(fields->m_statNodes, def.id, sprite, def.scale, num);
         }
     }
@@ -197,9 +183,10 @@ void StatsGarageLayer::renderCurrentPage() {
 
     fields->m_statsContainer->removeAllChildrenWithCleanup(false);
 
-    const int total = static_cast<int>(fields->m_statNodes.size());
-    const int maxPage = getMaxPage();
-    const bool needsPagination = total > ELEMENTS_PER_PAGE;
+    int const total = static_cast<int>(fields->m_statNodes.size());
+    int const maxPage = getMaxPage();
+    int const perPage = getElementsPerPage();
+    bool const needsPagination = total > perPage;
 
     auto updateArrowState = [](CCNode* container, bool enabled) {
         if (!container) return;
@@ -215,8 +202,8 @@ void StatsGarageLayer::renderCurrentPage() {
         fields->m_statsContainer->addChild(fields->m_prevArrow);
     }
 
-    const size_t start = static_cast<size_t>(fields->m_currentPage) * ELEMENTS_PER_PAGE;
-    const size_t end = std::min(start + ELEMENTS_PER_PAGE, fields->m_statNodes.size());
+    size_t const start = static_cast<size_t>(fields->m_currentPage) * perPage;
+    size_t const end = std::min(start + perPage, fields->m_statNodes.size());
 
     for (size_t i = start; i < end; ++i) {
         fields->m_statsContainer->addChild(fields->m_statNodes[i]);

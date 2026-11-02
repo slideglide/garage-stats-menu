@@ -20,8 +20,13 @@ inline constexpr float TOP_MARGIN = 6.f;
 inline constexpr float RIGHT_MARGIN = 8.f;
 inline constexpr float ITEM_GAP = 3.f;
 inline constexpr float ARROW_SCALE = 0.5f;
+inline constexpr float COLUMN_WIDTH = 80.f;
+inline constexpr float ITEM_HEIGHT = 15.f;
+inline constexpr float ARROW_HEIGHT = 16.f;
+inline constexpr float STATS_SCALE = 0.85f;
+inline constexpr float VERTICAL_PADDING = 35.f;
 
-inline const auto DEFAULT_STATS = std::to_array<StatDef>({
+inline auto const DEFAULT_STATS = std::to_array<StatDef>({
     {"stars-stat", "stars", "GJ_starsIcon_001.png", "6", 0.54f},
     {"moons-stat", "moons", "GJ_moonsIcon_001.png", "28", 0.54f},
     {"gold-coins-stat", "coins", "GJ_coinsIcon_001.png", "8", 0.51f},
@@ -39,6 +44,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
         std::vector<geode::Ref<cocos2d::CCNode>> m_statNodes;
         geode::ListenerHandle m_statListener;
         int m_currentPage = 0;
+        float m_availableHeight = 0.f;
         bool m_isRebuilding = false;
 
         ~Fields() {
@@ -50,11 +56,11 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
     bool init();
 
 private:
-    static cocos2d::CCNode* createStatsContainer(const cocos2d::CCRect& safeArea);
+    static cocos2d::CCNode* createStatsContainer(cocos2d::CCRect const& safeArea, float availableHeight);
     static cocos2d::CCNode* createStatItemContainer(geode::Label* label, cocos2d::CCNode* icon, std::string_view id);
     void addStatItem(std::vector<geode::Ref<cocos2d::CCNode>>& target, std::string_view id, geode::Ref<cocos2d::CCNode> icon, float scale, int number);
 
-    static float getAdaptiveScale(const cocos2d::CCRect& safeArea);
+    int getElementsPerPage();
     static void setArrowState(geode::Button* button, bool enabled);
 
     void setupNavigation();
