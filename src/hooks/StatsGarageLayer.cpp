@@ -1,4 +1,5 @@
 #include "StatsGarageLayer.hpp"
+#include <Geode/binding/GameStatsManager.hpp>
 #include "../api/api.hpp"
 #include "../utils.hpp"
 #include <algorithm>
@@ -6,7 +7,7 @@
 using namespace geode::prelude;
 
 void StatsGarageLayer::onModify(auto& self) {
-    if (!self.setHookPriority("GJGarageLayer::init", Priority::FirstPost)) {
+    if (!self.setHookPriorityPost("GJGarageLayer::init", Priority::First)) {
         log::error("Failed to set hook priority for GJGarageLayer::init");
     }
 }
@@ -155,6 +156,7 @@ void StatsGarageLayer::rebuildStats() {
     if (fields->m_isRebuilding) return;
     fields->m_isRebuilding = true;
 
+    auto oldNodes = std::move(fields->m_statNodes);
     fields->m_statNodes.clear();
 
     for (auto const& def : DEFAULT_STATS) {
@@ -174,6 +176,11 @@ void StatsGarageLayer::rebuildStats() {
     });
 
     goToPage(fields->m_currentPage);
+
+    for (auto& node : oldNodes) {
+        node->cleanup();
+    }
+
     fields->m_isRebuilding = false;
 }
 

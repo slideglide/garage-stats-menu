@@ -54,11 +54,11 @@ $execute {
 
     // Update the display node of your stat item.
     // Use `updateDisplayButton` instead if your stat is a button.
-    // The node scale parameter is optional! The default scale is 0.5f.
+    // The node scale parameter is optional! If omitted, the current scale is kept.
     updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
 
     // Update the display button of your stat item.
-    // The node scale parameter is optional! The default scale is 0.5f.
+    // The node scale parameter is optional! If omitted, the current scale is kept.
     updateDisplayButton("your-stat-item-id"_spr, [](){ return geode::Button::create([](auto) {}); }, 0.5f);
 
     // Unregister your stat item.

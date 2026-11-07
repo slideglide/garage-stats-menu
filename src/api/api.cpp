@@ -39,13 +39,16 @@ bool StatsManager::isStatItemRegistered(ZStringView itemID) {
 void StatsManager::updateDisplayNode(
     ZStringView itemID,
     stats_api::NodeProvider provider, 
-    float scale
+    std::optional<float> scale
 ) {
     if (auto it = m_stats.find(itemID); it != m_stats.end()) {
         it->second.provider = std::move(provider);
-        it->second.nodeScale = scale;
+        if (scale) it->second.nodeScale = *scale;
         StatChangeEvent(itemID).send();
+        return;
     }
+
+    log::error("Failed to update display node: stat item '{}' not found", itemID);
 }
 
 void StatsManager::unregisterStatItem(ZStringView itemID) {
@@ -68,7 +71,10 @@ void StatsManager::setDisplayedNumber(ZStringView itemID, int number) {
             it->second.displayedNumber = number;
             StatChangeEvent(itemID).send();
         }
+        return;
     }
+
+    log::error("Failed to set displayed number: stat item '{}' not found", itemID);
 }
 
 void StatsManager::forEachStat(StatCallback callback) {
@@ -121,11 +127,11 @@ bool isStatItemRegistered(geode::ZStringView itemID) {
     return StatsManager::get()->isStatItemRegistered(itemID);
 }
 
-void updateDisplayNode(ZStringView itemID, NodeProvider provider, float scale) {
+void updateDisplayNode(ZStringView itemID, NodeProvider provider, std::optional<float> scale) {
     StatsManager::get()->updateDisplayNode(itemID, std::move(provider), scale);
 }
 
-void updateDisplayButton(ZStringView itemID, ButtonProvider provider, float scale) {
+void updateDisplayButton(ZStringView itemID, ButtonProvider provider, std::optional<float> scale) {
     StatsManager::get()->updateDisplayNode(itemID, NodeProvider(std::move(provider)), scale);
 }
 

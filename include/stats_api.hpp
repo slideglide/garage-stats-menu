@@ -7,10 +7,9 @@
 #include <Geode/loader/Loader.hpp>
 #include <Geode/ui/Button.hpp>
 #include <Geode/utils/ZStringView.hpp>
+#include <optional>
 
 #define MY_MOD_ID "capeling.garage-stats-menu"
-
-constexpr float defaultNodeScale = 0.5f;
 
 namespace stats_api {
 
@@ -19,13 +18,13 @@ using ButtonProvider = geode::Function<geode::Button*()>;
 
 GEODE_EVENT_EXPORT(
     void, registerStatItem,
-    (geode::ZStringView itemID, NodeProvider provider, int displayedNumber, float nodeScale = defaultNodeScale),
+    (geode::ZStringView itemID, NodeProvider provider, int displayedNumber, float nodeScale = 0.5f),
     (itemID, std::move(provider), displayedNumber, nodeScale)
 );
 
 GEODE_EVENT_EXPORT(
     void, registerStatItemButton,
-    (geode::ZStringView itemID, ButtonProvider provider, int displayedNumber, float nodeScale = defaultNodeScale),
+    (geode::ZStringView itemID, ButtonProvider provider, int displayedNumber, float nodeScale = 0.5f),
     (itemID, std::move(provider), displayedNumber, nodeScale)
 );
 
@@ -37,13 +36,13 @@ GEODE_EVENT_EXPORT(
 
 GEODE_EVENT_EXPORT(
     void, updateDisplayNode,
-    (geode::ZStringView itemID, NodeProvider provider, float nodeScale = defaultNodeScale),
+    (geode::ZStringView itemID, NodeProvider provider, std::optional<float> nodeScale = std::nullopt),
     (itemID, std::move(provider), nodeScale)
 );
 
 GEODE_EVENT_EXPORT(
     void, updateDisplayButton,
-    (geode::ZStringView itemID, ButtonProvider provider, float nodeScale = defaultNodeScale),
+    (geode::ZStringView itemID, ButtonProvider provider, std::optional<float> nodeScale = std::nullopt),
     (itemID, std::move(provider), nodeScale)
 );
 

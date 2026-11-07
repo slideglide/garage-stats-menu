@@ -1,14 +1,14 @@
 #include <Geode/modify/GJGarageLayer.hpp>
+#include <array>
+#include <string_view>
 
 using namespace geode::prelude;
 
 class $modify(HideDefaultItemsLayer, GJGarageLayer) {
     bool init() {
-        if (!GJGarageLayer::init()) {
-            return false;
-        }
+        if (!GJGarageLayer::init()) return false;
 
-        constexpr auto garageIDs = std::to_array<std::string_view>(
+        static constexpr auto garageIDs = std::to_array<std::string_view>(
             {"moons-icon", "stars-icon", "coins-icon", "user-coins-icon", "orbs-icon",
              "diamonds-icon", "diamond-shards-icon", "moons-label", "stars-label", "coins-label",
              "user-coins-label", "orbs-label", "diamonds-label", "diamond-shards-label"}

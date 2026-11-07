@@ -13,10 +13,10 @@ Add the mod as a dependency in your mod's `mod.json`:
 ```
 
 ## Usage
-Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
+Include `capeling.garage-stats-menu/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
 ```
-#include <capeling.garage-stats-menu/include/stats_api.hpp>
+#include <capeling.garage-stats-menu/stats_api.hpp>
 
 using namespace stats_api;
 
@@ -54,11 +54,11 @@ $execute {
 
     // Update the display node of your stat item.
     // Use `updateDisplayButton` instead if your stat is a button.
-    // The node scale parameter is optional! The default scale is 0.5f.
+    // The node scale parameter is optional! If omitted, the current scale is kept.
     updateDisplayNode("your-stat-item-id"_spr, [](){ return cocos2d::CCNode::create(); }, 0.5f);
 
     // Update the display button of your stat item.
-    // The node scale parameter is optional! The default scale is 0.5f.
+    // The node scale parameter is optional! If omitted, the current scale is kept.
     updateDisplayButton("your-stat-item-id"_spr, [](){ return geode::Button::create([](auto) {}); }, 0.5f);
 
     // Unregister your stat item.
@@ -106,7 +106,7 @@ class $modify(GJGarageLayer) {
 And here's how it can be migrated to the new API:
 
 ```
-#include <capeling.garage-stats-menu/include/stats_api.hpp>
+#include <capeling.garage-stats-menu/stats_api.hpp>
 
 using namespace stats_api;
 

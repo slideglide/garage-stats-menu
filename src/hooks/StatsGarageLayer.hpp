@@ -49,6 +49,12 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
         ~Fields() {
             m_statListener.destroy();
+
+            for (auto& node : m_statNodes) {
+                node->cleanup();
+            }
+            if (m_prevArrow) m_prevArrow->cleanup();
+            if (m_nextArrow) m_nextArrow->cleanup();
         }
     };
 
