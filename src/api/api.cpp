@@ -127,11 +127,19 @@ bool isStatItemRegistered(geode::ZStringView itemID) {
     return StatsManager::get()->isStatItemRegistered(itemID);
 }
 
-void updateDisplayNode(ZStringView itemID, NodeProvider provider, std::optional<float> scale) {
+void updateDisplayNode(
+    ZStringView itemID, 
+    NodeProvider provider, 
+    std::optional<float> scale
+) {
     StatsManager::get()->updateDisplayNode(itemID, std::move(provider), scale);
 }
 
-void updateDisplayButton(ZStringView itemID, ButtonProvider provider, std::optional<float> scale) {
+void updateDisplayButton(
+    ZStringView itemID, 
+    ButtonProvider provider, 
+    std::optional<float> scale
+) {
     StatsManager::get()->updateDisplayNode(itemID, NodeProvider(std::move(provider)), scale);
 }
 

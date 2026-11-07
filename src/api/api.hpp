@@ -28,9 +28,18 @@ public:
 
     static StatsManager* get();
 
-    void registerStatItem(geode::ZStringView itemID, stats_api::NodeProvider provider, int number, float scale);
+    void registerStatItem(
+        geode::ZStringView itemID, 
+        stats_api::NodeProvider provider, 
+        int number, 
+        float scale
+    );
     bool isStatItemRegistered(geode::ZStringView itemID);
-    void updateDisplayNode(geode::ZStringView itemID, stats_api::NodeProvider provider, std::optional<float> scale);
+    void updateDisplayNode(
+        geode::ZStringView itemID, 
+        stats_api::NodeProvider provider, 
+        std::optional<float> scale
+    );
     void unregisterStatItem(geode::ZStringView itemID);
 
     geode::Result<int> getDisplayedNumber(geode::ZStringView itemID);

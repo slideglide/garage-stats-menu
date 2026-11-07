@@ -39,7 +39,9 @@ CCNode* StatsGarageLayer::createStatsContainer(CCRect const& safeArea, float ava
     container->ignoreAnchorPointForPosition(false);
     container->setAnchorPoint({1.f, 1.f});
     container->setContentSize({COLUMN_WIDTH, availableHeight});
-    container->setPosition({safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN});
+    container->setPosition(
+        {safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN}
+    );
     container->setScale(STATS_SCALE);
     container->setLayout(
         ColumnLayout::create()
@@ -53,7 +55,11 @@ CCNode* StatsGarageLayer::createStatsContainer(CCRect const& safeArea, float ava
     return container;
 }
 
-CCNode* StatsGarageLayer::createStatItemContainer(Label* label, CCNode* icon, std::string_view id) {
+CCNode* StatsGarageLayer::createStatItemContainer(
+    Label* label, 
+    CCNode* icon, 
+    std::string_view id
+) {
     auto container = CCNode::create();
     container->setID(fmt::format("{}-container", id));
     container->setContentSize({COLUMN_WIDTH, ITEM_HEIGHT});
@@ -97,10 +103,14 @@ int StatsGarageLayer::getElementsPerPage() {
     float const height = fields->m_availableHeight;
     int const total = static_cast<int>(fields->m_statNodes.size());
 
-    int const fitWithoutArrows = static_cast<int>((height + ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+    int const fitWithoutArrows = 
+        static_cast<int>((height + ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+
     if (total <= std::min(fitWithoutArrows, ELEMENTS_PER_PAGE)) return ELEMENTS_PER_PAGE;
 
-    int const fitWithArrows = static_cast<int>((height - 2 * ARROW_HEIGHT - ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+    int const fitWithArrows = 
+        static_cast<int>((height - 2 * ARROW_HEIGHT - ITEM_GAP) / (ITEM_HEIGHT + ITEM_GAP));
+
     return std::clamp(fitWithArrows, 1, ELEMENTS_PER_PAGE);
 }
 
@@ -170,7 +180,13 @@ void StatsGarageLayer::rebuildStats() {
     StatsManager::get()->forEachStat([this, fields](std::string_view id, StatItem& stat) {
         if (stat.provider) {
             if (auto* node = stat.provider()) {
-                addStatItem(fields->m_statNodes, id, node, stat.nodeScale, stat.displayedNumber);
+                addStatItem(
+                    fields->m_statNodes, 
+                    id,
+                    node, 
+                    stat.nodeScale, 
+                    stat.displayedNumber
+                );
             }
         }
     });

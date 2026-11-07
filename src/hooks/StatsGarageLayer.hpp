@@ -63,8 +63,18 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
 
 private:
     static cocos2d::CCNode* createStatsContainer(cocos2d::CCRect const& safeArea, float availableHeight);
-    static cocos2d::CCNode* createStatItemContainer(geode::Label* label, cocos2d::CCNode* icon, std::string_view id);
-    void addStatItem(std::vector<geode::Ref<cocos2d::CCNode>>& target, std::string_view id, geode::Ref<cocos2d::CCNode> icon, float scale, int number);
+    static cocos2d::CCNode* createStatItemContainer(
+        geode::Label* label, 
+        cocos2d::CCNode* icon, 
+        std::string_view id
+    );
+    void addStatItem(
+        std::vector<geode::Ref<cocos2d::CCNode>>& target, 
+        std::string_view id, 
+        geode::Ref<cocos2d::CCNode> icon, 
+        float scale, 
+        int number
+    );
 
     int getElementsPerPage();
 
