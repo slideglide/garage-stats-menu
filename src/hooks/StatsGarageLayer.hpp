@@ -67,12 +67,10 @@ private:
     void addStatItem(std::vector<geode::Ref<cocos2d::CCNode>>& target, std::string_view id, geode::Ref<cocos2d::CCNode> icon, float scale, int number);
 
     int getElementsPerPage();
-    static void setArrowState(geode::Button* button, bool enabled);
 
     void setupNavigation();
     int getMaxPage();
     void goToPage(int page);
     void rebuildStats();
-    void applyPagination();
     void renderCurrentPage();
 };
