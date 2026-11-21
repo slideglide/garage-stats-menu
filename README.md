@@ -13,10 +13,10 @@ Add the mod as a dependency in your mod's `mod.json`:
 ```
 
 ## Usage
-Include `capeling.garage-stats-menu/include/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
+Include `capeling.garage-stats-menu/stats_api.hpp` and use `registerStatItem` in an `$execute` block, here's an example code with all the provided APIs listed:
 
 ```cpp
-#include <capeling.garage-stats-menu/include/stats_api.hpp>
+#include <capeling.garage-stats-menu/stats_api.hpp>
 
 using namespace stats_api;
 
@@ -106,7 +106,7 @@ class $modify(GJGarageLayer) {
 And here's how it can be migrated to the new API:
 
 ```cpp
-#include <capeling.garage-stats-menu/include/stats_api.hpp>
+#include <capeling.garage-stats-menu/stats_api.hpp>
 
 using namespace stats_api;
 
