@@ -18,6 +18,7 @@ struct StatDef {
 inline constexpr int ELEMENTS_PER_PAGE = 10;
 inline constexpr float TOP_MARGIN = 6.f;
 inline constexpr float RIGHT_MARGIN = 8.f;
+inline constexpr float CORNER_CLEARANCE = 0.35f;
 inline constexpr float ITEM_GAP = 3.f;
 inline constexpr float ARROW_SCALE = 0.5f;
 inline constexpr float COLUMN_WIDTH = 80.f;
@@ -26,7 +27,7 @@ inline constexpr float ARROW_HEIGHT = 16.f;
 inline constexpr float STATS_SCALE = 0.85f;
 inline constexpr float VERTICAL_PADDING = 35.f;
 
-inline auto const DEFAULT_STATS = std::to_array<StatDef>({
+inline constexpr auto DEFAULT_STATS = std::to_array<StatDef>({
     {"stars-stat", "stars", "GJ_starsIcon_001.png", "6", 0.54f},
     {"moons-stat", "moons", "GJ_moonsIcon_001.png", "28", 0.54f},
     {"gold-coins-stat", "coins", "GJ_coinsIcon_001.png", "8", 0.51f},
@@ -62,7 +63,7 @@ class $modify(StatsGarageLayer, GJGarageLayer) {
     bool init();
 
 private:
-    static cocos2d::CCNode* createStatsContainer(cocos2d::CCRect const& safeArea, float availableHeight);
+    static cocos2d::CCNode* createStatsContainer(cocos2d::CCPoint const& topRight, float availableHeight);
     static cocos2d::CCNode* createStatItemContainer(
         geode::Label* label, 
         cocos2d::CCNode* icon, 

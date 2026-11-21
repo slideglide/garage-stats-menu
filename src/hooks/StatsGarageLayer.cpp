@@ -16,10 +16,16 @@ bool StatsGarageLayer::init() {
     if (!GJGarageLayer::init()) return false;
 
     auto* fields = m_fields.self();
-    auto const safeArea = geode::utils::getSafeAreaRect();
 
-    fields->m_availableHeight = (safeArea.size.height - VERTICAL_PADDING) / STATS_SCALE;
-    fields->m_statsContainer = createStatsContainer(safeArea, fields->m_availableHeight);
+    auto const winSize = CCDirector::get()->getWinSize();
+    float const corner = geode::utils::getSafeAreaRect().origin.x * CORNER_CLEARANCE;
+    CCPoint const topRight = {
+        winSize.width - std::max(RIGHT_MARGIN, corner),
+        winSize.height - std::max(TOP_MARGIN, corner)
+    };
+
+    fields->m_availableHeight = (topRight.y - VERTICAL_PADDING) / STATS_SCALE;
+    fields->m_statsContainer = createStatsContainer(topRight, fields->m_availableHeight);
     this->addChild(fields->m_statsContainer);
 
     setupNavigation();
@@ -32,16 +38,14 @@ bool StatsGarageLayer::init() {
     return true;
 }
 
-CCNode* StatsGarageLayer::createStatsContainer(CCRect const& safeArea, float availableHeight) {
+CCNode* StatsGarageLayer::createStatsContainer(CCPoint const& topRight, float availableHeight) {
     auto container = CCNode::create();
     container->setID("stats-container"_spr);
     container->setZOrder(2);
     container->ignoreAnchorPointForPosition(false);
     container->setAnchorPoint({1.f, 1.f});
     container->setContentSize({COLUMN_WIDTH, availableHeight});
-    container->setPosition(
-        {safeArea.getMaxX() - RIGHT_MARGIN, safeArea.getMaxY() - TOP_MARGIN}
-    );
+    container->setPosition(topRight);
     container->setScale(STATS_SCALE);
     container->setLayout(
         ColumnLayout::create()
