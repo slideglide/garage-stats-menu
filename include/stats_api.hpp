@@ -2,7 +2,7 @@
 
 #include <Geode/Result.hpp>
 #include <Geode/cocos/base_nodes/CCNode.h>
-#include <Geode/loader/Dispatch.hpp>
+#include <Geode/loader/EventExport.hpp>
 #include <Geode/loader/Event.hpp>
 #include <Geode/loader/Loader.hpp>
 #include <Geode/ui/Button.hpp>

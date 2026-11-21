@@ -1,5 +1,5 @@
 {
-	"geode": "6.0.0-alpha.1",
+	"geode": "6.0.0-beta.1",
 	"gd": {
 		"win": "2.2091",
 		"android": "2.2091",
@@ -8,7 +8,7 @@
 	},
 	"id": "capeling.garage-stats-menu",
 	"name": "Stats Display API",
-	"version": "v2.0.1",
+	"version": "v2.0.2",
 	"developers": ["Capeling", "slideglide"],
 	"description": "API mod to add custom stats into the icon kit",
 	"api": {

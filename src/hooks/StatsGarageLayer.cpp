@@ -69,8 +69,7 @@ CCNode* StatsGarageLayer::createStatItemContainer(
             ->setAutoScale(false)
             ->setGap(4.f)
     );
-    container->addChild(label);
-    container->addChild(icon);
+    container->addChildren(label, icon);
     container->updateLayout();
     return container;
 }
@@ -117,9 +116,9 @@ int StatsGarageLayer::getElementsPerPage() {
 void StatsGarageLayer::setupNavigation() {
     auto* fields = m_fields.self();
 
-    auto createArrowContainer = [this](bool isNext) -> Ref<CCNode> {
-        auto btn = Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [this, isNext](auto) {
-            this->goToPage(m_fields->m_currentPage + (isNext ? 1 : -1));
+    auto createArrowContainer = [fields, this](bool isNext) -> Ref<CCNode> {
+        auto btn = Button::createWithSpriteFrameName("GJ_arrow_02_001.png", [fields, this, isNext](auto) {
+            this->goToPage(fields->m_currentPage + (isNext ? 1 : -1));
         });
 
         if (auto* sprite = typeinfo_cast<CCSprite*>(btn->getDisplayNode())) {
