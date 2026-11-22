@@ -1,6 +1,7 @@
 #define GEODE_DEFINE_EVENT_EXPORTS
 #include "api.hpp"
 #include <algorithm>
+#include <utility>
 #include <stats_api.hpp>
 
 using namespace geode::prelude;
@@ -38,13 +39,16 @@ bool StatsManager::isStatItemRegistered(ZStringView itemID) {
 void StatsManager::updateDisplayNode(
     ZStringView itemID,
     stats_api::NodeProvider provider, 
-    float scale
+    std::optional<float> scale
 ) {
     if (auto it = m_stats.find(itemID); it != m_stats.end()) {
         it->second.provider = std::move(provider);
-        it->second.nodeScale = scale;
+        if (scale) it->second.nodeScale = *scale;
         StatChangeEvent(itemID).send();
+        return;
     }
+
+    log::error("Failed to update display node: stat item '{}' not found", itemID);
 }
 
 void StatsManager::unregisterStatItem(ZStringView itemID) {
@@ -67,22 +71,35 @@ void StatsManager::setDisplayedNumber(ZStringView itemID, int number) {
             it->second.displayedNumber = number;
             StatChangeEvent(itemID).send();
         }
+        return;
     }
+
+    log::error("Failed to set displayed number: stat item '{}' not found", itemID);
 }
 
 void StatsManager::forEachStat(StatCallback callback) {
-    std::vector<std::string_view> keys;
+    std::vector<std::string> keys;
     keys.reserve(m_stats.size());
 
-    for (const auto& [key, _] : m_stats) {
+    for (auto const& [key, _] : m_stats) {
         keys.push_back(key);
     }
 
     std::sort(keys.begin(), keys.end());
 
-    for (const auto& key : keys) {
-        if (auto it = m_stats.find(key); it != m_stats.end()) {
-            callback(key, it->second);
+    for (auto const& key : keys) {
+        auto it = m_stats.find(key);
+        if (it == m_stats.end()) continue;
+
+        StatItem item{
+            .provider = std::exchange(it->second.provider, nullptr),
+            .displayedNumber = it->second.displayedNumber,
+            .nodeScale = it->second.nodeScale
+        };
+        callback(key, item);
+
+        if (it = m_stats.find(key); it != m_stats.end() && !it->second.provider) {
+            it->second.provider = std::move(item.provider);
         }
     }
 }
@@ -103,26 +120,27 @@ void registerStatItemButton(
     int number, 
     float scale
 ) {
-    StatsManager::get()->registerStatItem(
-        itemID,
-        [bp = std::move(provider)]
-        () mutable -> cocos2d::CCNode* 
-        { return bp ? bp() : nullptr; }, 
-        number,
-        scale);
+    StatsManager::get()->registerStatItem(itemID, NodeProvider(std::move(provider)), number, scale);
 }
 
 bool isStatItemRegistered(geode::ZStringView itemID) {
     return StatsManager::get()->isStatItemRegistered(itemID);
 }
 
-void updateDisplayNode(ZStringView itemID, NodeProvider provider, float scale) {
+void updateDisplayNode(
+    ZStringView itemID, 
+    NodeProvider provider, 
+    std::optional<float> scale
+) {
     StatsManager::get()->updateDisplayNode(itemID, std::move(provider), scale);
 }
 
-void updateDisplayButton(ZStringView itemID, ButtonProvider provider, float scale) {
-    StatsManager::get()->updateDisplayNode(
-        itemID, [bp = std::move(provider)]() mutable -> cocos2d::CCNode* { return bp ? bp() : nullptr; }, scale);
+void updateDisplayButton(
+    ZStringView itemID, 
+    ButtonProvider provider, 
+    std::optional<float> scale
+) {
+    StatsManager::get()->updateDisplayNode(itemID, NodeProvider(std::move(provider)), scale);
 }
 
 void unregisterStatItem(ZStringView itemID) { 

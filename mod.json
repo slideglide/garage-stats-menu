@@ -1,14 +1,14 @@
 {
-	"geode": "5.10.1",
+	"geode": "6.0.0-beta.1",
 	"gd": {
-		"win": "2.2081",
-		"android": "2.2081",
-		"mac": "2.2081",
-		"ios": "2.2081"
+		"win": "2.2091",
+		"android": "2.2091",
+		"mac": "2.2091",
+		"ios": "2.2091"
 	},
 	"id": "capeling.garage-stats-menu",
 	"name": "Stats Display API",
-	"version": "v2.0.1",
+	"version": "v2.0.2",
 	"developers": ["Capeling", "slideglide"],
 	"description": "API mod to add custom stats into the icon kit",
 	"api": {
@@ -26,7 +26,7 @@
 		"source": "https://github.com/slideglide/garage-stats-menu"
 	},
 	"issues": {
-		"info": "If you find any issues create an issue here!",
+		"info": "If you find any issues with the mod, create an issue here!",
 		"url": "https://github.com/slideglide/garage-stats-menu/issues/new"
 	},
 	"tags": [
