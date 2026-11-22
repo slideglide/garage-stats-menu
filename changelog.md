@@ -1,3 +1,8 @@
+# v2.0.2
+- Port to Geode v6.0.0-beta.1
+- Make the scale parameter in the update functions of the API an `std::optional`
+- Potentially fix the positioning of the stats menu for mobile, report if there are any bugs
+
 # v2.0.1
 - Potentially fix the stats icons being comically small on mobile 
 
